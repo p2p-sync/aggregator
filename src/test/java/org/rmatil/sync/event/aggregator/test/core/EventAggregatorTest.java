@@ -5,6 +5,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.rmatil.sync.event.aggregator.api.IEventAggregator;
 import org.rmatil.sync.event.aggregator.core.EventAggregator;
+import org.rmatil.sync.event.aggregator.test.mocks.MockPathWatcherFactory;
+import org.rmatil.sync.event.aggregator.test.mocks.PathWatcherMock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,9 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * The test class for EventAggregator.
@@ -28,12 +28,6 @@ import static org.junit.Assert.assertTrue;
 public class EventAggregatorTest {
 
     private static final Logger logger = LoggerFactory.getLogger(EventAggregatorTest.class);
-
-    /**
-     * as starting/stop happens in
-     * the background we might miss eventBag. Wait a bit...
-     */
-    private static final long TIME_GAP_LIFE_CYCLE = 200L;
 
     /**
      * Jimfs polls only every 5 seconds...
@@ -49,6 +43,8 @@ public class EventAggregatorTest {
 
     protected static PathChangeEventListener eventListener;
 
+    protected static MockPathWatcherFactory mockPathWatcherFactory;
+
     @BeforeClass
     public static void setUp() {
 
@@ -62,7 +58,8 @@ public class EventAggregatorTest {
         }
 
         eventListener = new PathChangeEventListener();
-        eventAggregator = new EventAggregator(ROOT_TEST_DIR);
+        mockPathWatcherFactory = new MockPathWatcherFactory();
+        eventAggregator = new EventAggregator(ROOT_TEST_DIR, mockPathWatcherFactory);
         eventAggregator.addListener(eventListener);
 
         try {
@@ -86,22 +83,43 @@ public class EventAggregatorTest {
     public void aggregateEventsTest() {
         assertTrue("Failed to assure that eventBag are empty", eventListener.getEvents().isEmpty());
 
-        Path testFile = ROOT_TEST_DIR.resolve("file1.txt");
+        PathWatcherMock pathWatcher = (PathWatcherMock) mockPathWatcherFactory.getPathWatcherInstance();
+
+        // create file
+        pathWatcher.mockFileCreation(ROOT_TEST_DIR);
 
         try {
-            Files.createFile(testFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            Thread.sleep(10000);
+            Thread.sleep(TIME_GAP_POLL_INTERVAL);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
-        assertFalse("Failed to assert that eventBag are not empty", eventListener.getEvents().isEmpty());
+        assertFalse("Failed to assert that eventBag is not empty after creation", eventListener.getEvents().isEmpty());
         assertEquals("Failed to assert that the eventBag is holding only the creation event", 1, eventListener.getEvents().size());
+
+        // modify file
+        pathWatcher.mockFileModify(ROOT_TEST_DIR);
+
+        try {
+            Thread.sleep(TIME_GAP_POLL_INTERVAL);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        assertFalse("Failed to assert that eventBag is not empty after modifying", eventListener.getEvents().isEmpty());
+        assertEquals("Failed to assert that the eventBag is holding only the modify event", 1, eventListener.getEvents().size());
+
+        // delete file
+        pathWatcher.mockFileDelete(ROOT_TEST_DIR);
+
+        try {
+            Thread.sleep(TIME_GAP_POLL_INTERVAL);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        assertFalse("Failed to assert that eventBag is not empty after deleting", eventListener.getEvents().isEmpty());
+        assertEquals("Failed to assert that the eventBag is holding only the delete event", 1, eventListener.getEvents().size());
     }
 
 }

@@ -47,7 +47,7 @@ public class PathEventListener implements PathChangeListener {
     }
 
     public void onPathModified(Path path) {
-        logger.debug("Got notified about the modifying of '" + path + "'");
+        logger.trace("Got notified about the modifying of '" + path + "'");
 
         String hash = null;
         try {
@@ -60,16 +60,9 @@ public class PathEventListener implements PathChangeListener {
     }
 
     public void onPathDeleted(Path path) {
-        logger.debug("Got notified about the deletion of '" + path + "'");
+        logger.trace("Got notified about the deletion of '" + path + "'");
 
-        String hash = null;
-        try {
-            hash = Hash.hash(Config.getDefaultConfiguration().getHashingAlgorithm(), path.toFile());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        this.eventBag.add(new DeleteEvent(path, path.toFile().getName(), hash));
+        this.eventBag.add(new DeleteEvent(path, null, null));
     }
 
     /**

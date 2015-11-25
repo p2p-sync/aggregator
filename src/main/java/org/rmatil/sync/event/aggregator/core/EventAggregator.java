@@ -1,10 +1,12 @@
 package org.rmatil.sync.event.aggregator.core;
 
 import name.mitterdorfer.perlock.PathWatcher;
-import name.mitterdorfer.perlock.PathWatcherFactory;
 import org.rmatil.sync.event.aggregator.api.IEventAggregator;
 import org.rmatil.sync.event.aggregator.api.IEventListener;
 import org.rmatil.sync.event.aggregator.core.events.IEvent;
+import org.rmatil.sync.event.aggregator.core.pathwatcher.APathWatcherFactory;
+import org.rmatil.sync.event.aggregator.core.pathwatcher.IPathWatcherFactory;
+import org.rmatil.sync.event.aggregator.core.pathwatcher.PerlockPathWatcherFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -69,19 +71,18 @@ public class EventAggregator implements Runnable, IEventAggregator {
      *
      * @param rootPath The root path to watch
      */
-    public EventAggregator(Path rootPath) {
+    public EventAggregator(Path rootPath, IPathWatcherFactory pathWatcherFactory) {
         this.rootPath = rootPath;
         this.aggregationInterval = DEFAULT_AGGREGATION_INTERVAL;
         this.pathEventListener = new PathEventListener();
         this.eventListener = new ArrayList<IEventListener>();
 
         this.pathWatcherExecutorService = Executors.newFixedThreadPool(EventAggregator.NUMBER_OF_PATHS_TO_WATCH);
-        PathWatcherFactory pathWatcherFactory = new PathWatcherFactory(pathWatcherExecutorService);
 
         if (CREATE_RECURSIVE_WATCHER) {
-            this.pathWatcher = pathWatcherFactory.createRecursiveWatcher(this.rootPath, this.pathEventListener);
+            this.pathWatcher = pathWatcherFactory.createRecursiveWatcher(pathWatcherExecutorService, this.rootPath, this.pathEventListener);
         } else {
-            this.pathWatcher = pathWatcherFactory.createNonRecursiveWatcher(this.rootPath, this.pathEventListener);
+            this.pathWatcher = pathWatcherFactory.createNonRecursiveWatcher(pathWatcherExecutorService, this.rootPath, this.pathEventListener);
         }
 
         this.aggregationExecutorService = Executors.newSingleThreadScheduledExecutor();
