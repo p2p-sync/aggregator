@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * The event aggregator which aggregates multiple
- * file system eventBag to one
+ * file system events to one
  */
 public class EventAggregator implements Runnable, IEventAggregator {
 
@@ -34,24 +34,24 @@ public class EventAggregator implements Runnable, IEventAggregator {
 
     /**
      * The scheduled thread executor for this aggregator.
-     * Used to propagate all eventBag in the specified time interval
+     * Used to propagate all events in the specified time interval
      */
     protected ScheduledExecutorService aggregationExecutorService;
 
     /**
      * The path watcher instance used to watch path changes
      */
-    protected PathWatcher          pathWatcher;
+    protected PathWatcher pathWatcher;
 
     /**
      * The root path which is watched
      */
-    protected Path                 rootPath;
+    protected Path rootPath;
 
     /**
      * An event listener listening for path element changes
      */
-    protected PathEventListener    pathEventListener;
+    protected PathEventListener pathEventListener;
 
     /**
      * A list of event listener we notify
@@ -60,9 +60,9 @@ public class EventAggregator implements Runnable, IEventAggregator {
     protected List<IEventListener> eventListener;
 
     /**
-     * The interval in which the eventBag are aggregated
+     * The interval in which the events are aggregated
      */
-    protected long                 aggregationInterval;
+    protected long aggregationInterval;
 
     /**
      * The root path element which is being watched
@@ -112,7 +112,7 @@ public class EventAggregator implements Runnable, IEventAggregator {
         }
 
         try {
-            // as starting/stop happens in the background (in a new thread) we might miss eventBag. Wait a bit...
+            // as starting/stop happens in the background (in a new thread) we might miss events. Wait a bit...
             Thread.sleep(TIME_GAP_LIFE_CYCLE);
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -131,13 +131,13 @@ public class EventAggregator implements Runnable, IEventAggregator {
     }
 
     public void run() {
-        // we need to copy these eventBag, otherwise we clear them right after the
+        // we need to copy these events, otherwise we clear them right after the
         // reference is copied
         List<IEvent> aggregatedEvents = new ArrayList<IEvent>();
         aggregatedEvents.addAll(this.pathEventListener.getEventBag());
         this.pathEventListener.clearEvents();
 
-        // TODO: aggregate eventBag
+        // TODO: aggregate events
 
         // notify all event listeners for the made changes
         for (IEventListener listener : this.eventListener) {

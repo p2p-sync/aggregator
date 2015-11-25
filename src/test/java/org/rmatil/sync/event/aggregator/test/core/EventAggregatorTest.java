@@ -33,7 +33,7 @@ public class EventAggregatorTest {
      * as starting/stop happens in
      * the background we might miss eventBag. Wait a bit...
      */
-    private static final long TIME_GAP_LIFE_CYCLE    = 200L;
+    private static final long TIME_GAP_LIFE_CYCLE = 200L;
 
     /**
      * Jimfs polls only every 5 seconds...
@@ -43,7 +43,7 @@ public class EventAggregatorTest {
     /**
      * The root folder used to test
      */
-    private static final Path ROOT_TEST_DIR          = Paths.get("/tmp/org.rmatil.sync.event.aggregator.test.dir");
+    private static final Path ROOT_TEST_DIR = Paths.get("./org.rmatil.sync.event.aggregator.test.dir");
 
     protected static IEventAggregator eventAggregator;
 
