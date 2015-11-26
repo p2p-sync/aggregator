@@ -2,6 +2,7 @@ package org.rmatil.sync.event.aggregator.test.mocks;
 
 import name.mitterdorfer.perlock.PathChangeListener;
 import name.mitterdorfer.perlock.PathWatcher;
+import org.rmatil.sync.event.aggregator.test.util.FileUtil;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -47,40 +48,17 @@ public class PathWatcherMock implements PathWatcher {
     }
 
     public void mockFileCreation(Path rootDir) {
-        Path testFile = rootDir.resolve("file1.txt");
-        try {
-            testFile = Files.createFile(testFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        Path testFile = FileUtil.createTestFile(rootDir);
         this.changeListener.onPathCreated(testFile);
     }
 
     public void mockFileModify(Path rootDir) {
-        Path testFilePath = rootDir.resolve("file1.txt");
-
-        try {
-            String s = "Hello World! ";
-            byte data[] = s.getBytes();
-            OutputStream out = new BufferedOutputStream(Files.newOutputStream(testFilePath, CREATE, APPEND));
-            out.write(data, 0, data.length);
-        } catch (IOException x) {
-            System.err.println(x);
-        }
-
-        this.changeListener.onPathModified(testFilePath);
+        Path testFile = FileUtil.modifyTestFile(rootDir);
+        this.changeListener.onPathModified(testFile);
     }
 
     public void mockFileDelete(Path rootDir) {
-        Path testFilePath = rootDir.resolve("file1.txt");
-
-        File file = testFilePath.toFile();
-
-        if (file.exists()) {
-            file.delete();
-        }
-
-        this.changeListener.onPathDeleted(testFilePath);
+        Path testFile = FileUtil.deleteTestFile(rootDir);
+        this.changeListener.onPathDeleted(testFile);
     }
 }

@@ -1,4 +1,4 @@
-package org.rmatil.sync.event.aggregator.test.core;
+package org.rmatil.sync.event.aggregator.test.util;
 
 import org.rmatil.sync.event.aggregator.core.events.IEvent;
 import org.rmatil.sync.event.aggregator.api.IEventListener;

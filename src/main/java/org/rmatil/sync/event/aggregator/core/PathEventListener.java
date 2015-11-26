@@ -17,7 +17,7 @@ import java.util.List;
 
 /**
  * Listens for path element changes.
- * Incoming eventBag are being added and hold until
+ * Incoming events are being added and hold until
  * one fetches and clears them.
  */
 public class PathEventListener implements PathChangeListener {
