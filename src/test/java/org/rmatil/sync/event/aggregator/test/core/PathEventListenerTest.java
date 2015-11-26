@@ -56,6 +56,7 @@ public class PathEventListenerTest {
         IEvent event = listener.getEventBag().get(0);
 
         assertThat("Event is not instance of CreateEvent", event, instanceOf(CreateEvent.class));
+        assertEquals("Event name is not equals", event.getEventName(), CreateEvent.EVENT_NAME);
         assertEquals("CreateEvent does not contain the same path element", file, event.getPath());
     }
 
@@ -80,6 +81,7 @@ public class PathEventListenerTest {
         IEvent modifyEvent = listener.getEventBag().get(1);
 
         assertThat("Event is not instance of ModifyEvent", modifyEvent, instanceOf(ModifyEvent.class));
+        assertEquals("Event name is not equals", modifyEvent.getEventName(), ModifyEvent.EVENT_NAME);
         assertEquals("ModifyEvent does not contain the same path element", file, modifyEvent.getPath());
     }
 
@@ -103,6 +105,7 @@ public class PathEventListenerTest {
         IEvent deleteEvent = listener.getEventBag().get(1);
 
         assertThat("Event is not instance of ModifyEvent", deleteEvent, instanceOf(DeleteEvent.class));
+        assertEquals("Event name is not equals", deleteEvent.getEventName(), DeleteEvent.EVENT_NAME);
         assertEquals("DeleteEvent does not contain the same path element", file, deleteEvent.getPath());
         assertNull("Filename is not null", deleteEvent.getName());
         assertNull("Hash is not null", deleteEvent.getHash());
