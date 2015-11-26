@@ -48,6 +48,7 @@ public class FileUtil {
             byte data[] = s.getBytes();
             OutputStream out = new BufferedOutputStream(Files.newOutputStream(testFilePath, CREATE, APPEND));
             out.write(data, 0, data.length);
+            out.close();
         } catch (IOException x) {
             System.err.println(x);
         }
