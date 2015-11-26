@@ -26,7 +26,7 @@ public class EventAggregator implements Runnable, IEventAggregator {
     protected final static int     NUMBER_OF_PATHS_TO_WATCH     = 1;
     protected final static boolean CREATE_RECURSIVE_WATCHER     = true;
     protected final static long    DEFAULT_AGGREGATION_INTERVAL = 5000L;
-    protected final static long    TIME_GAP_LIFE_CYCLE          = 1000L;
+    protected final static long    TIME_GAP_LIFE_CYCLE          = 100L;
 
     /**
      * The thread executor for the path watcher service.

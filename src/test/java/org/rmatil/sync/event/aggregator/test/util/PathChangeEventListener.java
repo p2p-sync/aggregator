@@ -25,6 +25,7 @@ public class PathChangeEventListener implements IEventListener {
     }
 
     public void onChange(List<IEvent> changes) {
+        logger.trace("Received a new set of changes");
         this.events = changes;
     }
 
