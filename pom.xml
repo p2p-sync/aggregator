@@ -8,6 +8,10 @@
     <artifactId>sync-event-aggregator</artifactId>
     <version>0.1-SNAPSHOT</version>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -16,6 +20,7 @@
                 <version>4.0.0</version>
                 <configuration>
                     <repoToken>${env.coveralls_repo_token}</repoToken>
+                    <sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>
                 </configuration>
             </plugin>
             <!-- Unit tests plugin, to skip runing test add -Dmaven.test.skip -->
@@ -25,8 +30,17 @@
                 <version>2.12.4</version>
                 <configuration>
                     <!-- This is required for code coverage to work. -->
-                    <argLine>${surefireArgLine}</argLine>
+                    <argLine>${argLine}</argLine>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -41,7 +55,7 @@
                 -->
                 <executions>
                     <execution>
-                        <id>prepare-agent</id>
+                        <id>default-prepare-agent</id>
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
