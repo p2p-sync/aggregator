@@ -6,6 +6,7 @@ import com.google.common.io.Files;
 import org.rmatil.sync.event.aggregator.config.HashingAlgorithm;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
@@ -21,31 +22,32 @@ public class Hash {
      *
      * @return The hash
      *
-     * @throws IOException If the hashing fails
+     * @throws IOException           If the hashing fails
+     * @throws FileNotFoundException If the given file does not exist
      */
     public static String hash(HashingAlgorithm hashingAlgorithm, File file)
             throws IOException {
-        String hash = null;
+
+        if (!file.exists()) {
+            throw new FileNotFoundException(file.getAbsolutePath() + " (No such file or directory)");
+        }
+
         HashCode hc = null;
 
         switch (hashingAlgorithm) {
             case SHA_1:
                 hc = Files.hash(file, Hashing.sha1());
+                break;
             case SHA_256:
                 hc = Files.hash(file, Hashing.sha256());
                 break;
             case SHA_512:
                 hc = Files.hash(file, Hashing.sha512());
                 break;
-            default:
-                hc = Files.hash(file, Hashing.sha256());
-                break;
         }
 
         // TODO: how is this applied to directories
 
-        hash = hc.toString();
-
-        return hash;
+        return hc.toString();
     }
 }
