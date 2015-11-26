@@ -20,7 +20,7 @@ public class HashTest {
     protected static Path testFile;
 
     @Rule
-    public ExpectedException thrown= ExpectedException.none();
+    public ExpectedException thrown = ExpectedException.none();
 
     @BeforeClass
     public static void setUp() {
@@ -119,6 +119,14 @@ public class HashTest {
         FileUtil.deleteTestFile(Config.DEFAULT.getRootTestDir());
 
         String hash = Hash.hash(HashingAlgorithm.SHA_1, testFile.toFile());
+    }
+
+    @Test
+    public void testFolderSha1()
+            throws IOException {
+        thrown.expect(FileNotFoundException.class);
+
+        String hash = Hash.hash(HashingAlgorithm.SHA_1, Config.DEFAULT.getRootTestDir().toFile());
     }
 
 }

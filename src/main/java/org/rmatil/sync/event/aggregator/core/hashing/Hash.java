@@ -28,8 +28,12 @@ public class Hash {
     public static String hash(HashingAlgorithm hashingAlgorithm, File file)
             throws IOException {
 
-        if (!file.exists()) {
+        if (! file.exists()) {
             throw new FileNotFoundException(file.getAbsolutePath() + " (No such file or directory)");
+        }
+
+        if (file.isDirectory()) {
+            throw new FileNotFoundException(file.getAbsolutePath() + " (Is a directory)");
         }
 
         HashCode hc = null;
