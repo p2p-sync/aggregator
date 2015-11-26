@@ -19,9 +19,9 @@ public abstract class APathTest {
     public static final Path ROOT_TEST_DIR = Config.DEFAULT.getRootTestDir();
 
     /**
-     * Jimfs polls only every 5 seconds...
+     * Push interval for event aggregator
      */
-    public static final long TIME_GAP_POLL_INTERVAL = Config.DEFAULT.getTimeGapPollInterval();
+    public static final long TIME_GAP_PUSH_INTERVAL = Config.DEFAULT.getTimeGapPushInterval();
 
     /**
      * Creates the test directory if not existing yet

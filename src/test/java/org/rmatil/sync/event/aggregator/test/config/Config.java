@@ -10,19 +10,19 @@ public enum Config {
 
     private String testFileName1 = "file1.txt";
 
-    private long timeGapPollInterval;
+    private long timeGapPushInterval;
 
     Config() {
         rootTestDir = Paths.get("./org.rmatil.sync.event.aggregator.test.dir");
-        timeGapPollInterval = 5500L;
+        timeGapPushInterval = 5500L;
     }
 
     public Path getRootTestDir() {
         return this.rootTestDir;
     }
 
-    public long getTimeGapPollInterval() {
-        return this.timeGapPollInterval;
+    public long getTimeGapPushInterval() {
+        return this.timeGapPushInterval;
     }
 
     public String getTestFileName1() {

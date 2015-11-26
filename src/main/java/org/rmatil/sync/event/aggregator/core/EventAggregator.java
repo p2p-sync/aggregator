@@ -140,6 +140,11 @@ public class EventAggregator implements Runnable, IEventAggregator {
 
         // TODO: aggregate events
 
+        // do not notify about empty events
+        if (aggregatedEvents.isEmpty()) {
+            return;
+        }
+
         // notify all event listeners for the made changes
         for (IEventListener listener : this.eventListener) {
             listener.onChange(aggregatedEvents);
