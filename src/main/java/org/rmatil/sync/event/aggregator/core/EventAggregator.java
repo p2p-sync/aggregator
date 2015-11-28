@@ -11,6 +11,7 @@ import org.rmatil.sync.event.aggregator.core.pathwatcher.PerlockPathWatcherFacto
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -137,6 +138,9 @@ public class EventAggregator implements Runnable, IEventAggregator {
         List<IEvent> aggregatedEvents = new ArrayList<IEvent>();
         aggregatedEvents.addAll(this.pathEventListener.getEventBag());
         this.pathEventListener.clearEvents();
+
+        // sort events according to their timestamp
+        Collections.sort(aggregatedEvents);
 
         // TODO: aggregate events
 

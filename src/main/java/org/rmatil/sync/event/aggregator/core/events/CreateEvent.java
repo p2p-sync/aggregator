@@ -13,11 +13,13 @@ public class CreateEvent extends AEvent {
      * @param path The path which is created
      * @param name The name of the path which is created
      * @param hash The hash of the path content
+     * @param timestamp The timestamp in milliseconds of this event
      */
-    public CreateEvent(Path path, String name, String hash) {
+    public CreateEvent(Path path, String name, String hash, long timestamp) {
         super.path = path;
         super.name = name;
         super.hash = hash;
+        super.timestamp = timestamp;
     }
 
     public String getEventName() {

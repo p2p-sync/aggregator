@@ -10,7 +10,7 @@ public abstract class AEvent implements IEvent {
     /**
      * The path element which was added/changed/removed
      */
-    protected Path   path;
+    protected Path path;
 
     /**
      * The name of the path element
@@ -22,6 +22,12 @@ public abstract class AEvent implements IEvent {
      */
     protected String hash;
 
+    /**
+     * A timestamp in milliseconds indicating the time
+     * in which this event occurred
+     */
+    protected long timestamp;
+
     public Path getPath() {
         return this.path;
     }
@@ -32,6 +38,19 @@ public abstract class AEvent implements IEvent {
 
     public String getHash() {
         return this.hash;
+    }
+
+    public long getTimestamp() {
+        return this.timestamp;
+    }
+
+    public int compareTo(IEvent anotherEvent) {
+        if (this.timestamp == anotherEvent.getTimestamp()) {
+            return 0;
+        }
+
+        // -1 if this object is less than anotherEvent
+        return this.timestamp < anotherEvent.getTimestamp() ? - 1 : 1;
     }
 
     public abstract String getEventName();

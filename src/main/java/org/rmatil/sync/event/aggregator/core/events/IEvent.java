@@ -6,7 +6,7 @@ import java.nio.file.Path;
  * An interface specifying an event which is
  * fired when the file tree has changed
  */
-public interface IEvent {
+public interface IEvent extends Comparable<IEvent> {
 
     /**
      * The path element which has changed
@@ -35,4 +35,12 @@ public interface IEvent {
      * @return The name of the event
      */
     String getEventName();
+
+    /**
+     * The timestamp in milliseconds at when
+     * this event happened
+     *
+     * @return The timestamp in milliseconds
+     */
+    long getTimestamp();
 }
