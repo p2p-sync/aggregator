@@ -50,8 +50,6 @@ public class Hash {
                 break;
         }
 
-        // TODO: how is this applied to directories
-
         return hc.toString();
     }
 }
