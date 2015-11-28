@@ -3,10 +3,9 @@ package org.rmatil.sync.event.aggregator.core;
 import name.mitterdorfer.perlock.PathWatcher;
 import org.rmatil.sync.event.aggregator.api.IEventAggregator;
 import org.rmatil.sync.event.aggregator.api.IEventListener;
+import org.rmatil.sync.event.aggregator.core.aggregator.IAggregator;
 import org.rmatil.sync.event.aggregator.core.events.IEvent;
-import org.rmatil.sync.event.aggregator.core.pathwatcher.APathWatcherFactory;
 import org.rmatil.sync.event.aggregator.core.pathwatcher.IPathWatcherFactory;
-import org.rmatil.sync.event.aggregator.core.pathwatcher.PerlockPathWatcherFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -63,6 +62,12 @@ public class EventAggregator implements Runnable, IEventAggregator {
     protected List<IEventListener> eventListener;
 
     /**
+     * A list of aggregators which each is responsible
+     * to aggregate a particular bunch of certain events
+     */
+    protected List<IAggregator> aggregators;
+
+    /**
      * The interval in which the events are aggregated
      */
     protected long aggregationInterval;
@@ -77,6 +82,7 @@ public class EventAggregator implements Runnable, IEventAggregator {
         this.aggregationInterval = DEFAULT_AGGREGATION_INTERVAL;
         this.pathEventListener = new PathEventListener();
         this.eventListener = new ArrayList<IEventListener>();
+        this.aggregators = new ArrayList<IAggregator>();
 
         this.pathWatcherExecutorService = Executors.newFixedThreadPool(EventAggregator.NUMBER_OF_PATHS_TO_WATCH);
 
@@ -95,6 +101,14 @@ public class EventAggregator implements Runnable, IEventAggregator {
 
     public void removeListener(IEventListener eventListener) {
         this.eventListener.remove(eventListener);
+    }
+
+    public void addAggregator(IAggregator aggregator) {
+        this.aggregators.add(aggregator);
+    }
+
+    public void removeAggregator(IAggregator aggregator) {
+        this.aggregators.remove(aggregator);
     }
 
     public void setAggregationInterval(long milliSeconds) {
@@ -142,11 +156,13 @@ public class EventAggregator implements Runnable, IEventAggregator {
         // sort events according to their timestamp
         Collections.sort(aggregatedEvents);
 
-        // TODO: aggregate events
-
         // do not notify about empty events
         if (aggregatedEvents.isEmpty()) {
             return;
+        }
+
+        for (IAggregator aggregator : aggregators) {
+            aggregatedEvents = aggregator.aggregate(aggregatedEvents);
         }
 
         // notify all event listeners for the made changes

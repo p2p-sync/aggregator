@@ -3,6 +3,10 @@ package org.rmatil.sync.event.aggregator.test.core;
 import org.junit.*;
 import org.rmatil.sync.event.aggregator.api.IEventAggregator;
 import org.rmatil.sync.event.aggregator.core.EventAggregator;
+import org.rmatil.sync.event.aggregator.core.aggregator.MoveAggregator;
+import org.rmatil.sync.event.aggregator.core.events.CreateEvent;
+import org.rmatil.sync.event.aggregator.core.events.DeleteEvent;
+import org.rmatil.sync.event.aggregator.core.events.MoveEvent;
 import org.rmatil.sync.event.aggregator.test.config.Config;
 import org.rmatil.sync.event.aggregator.test.mocks.MockPathWatcherFactory;
 import org.rmatil.sync.event.aggregator.test.mocks.PathWatcherMock;
@@ -14,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.*;
 
 /**
@@ -26,9 +31,9 @@ import static org.junit.Assert.*;
  */
 public class EventAggregatorTest {
 
-    private static final Logger logger        = LoggerFactory.getLogger(EventAggregatorTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(EventAggregatorTest.class);
 
-    private static final Path   ROOT_TEST_DIR = Config.DEFAULT.getRootTestDir();
+    private static final Path ROOT_TEST_DIR = Config.DEFAULT.getRootTestDir();
 
     protected static IEventAggregator eventAggregator;
 
@@ -42,10 +47,12 @@ public class EventAggregatorTest {
     public static void setUp() {
         APathTest.setUp();
 
+        MoveAggregator moveAggregator = new MoveAggregator();
         eventListener = new PathChangeEventListener();
         mockPathWatcherFactory = new MockPathWatcherFactory();
         eventAggregator = new EventAggregator(APathTest.ROOT_TEST_DIR, mockPathWatcherFactory);
         eventAggregator.setAggregationInterval(APathTest.TIME_GAP_PUSH_INTERVAL);
+        eventAggregator.addAggregator(moveAggregator);
         eventAggregator.addListener(eventListener);
 
         try {
@@ -137,6 +144,28 @@ public class EventAggregatorTest {
         }
 
         assertEquals("Failed to assert that the eventBag is holding only the delete event", 1, eventListener.getEvents().size());
+    }
+
+    /**
+     * Currently, a move is not detectable, since the delete event
+     * contains only a null value for the hash.
+     * We have to enrich the hash for a delete event by using our
+     * local stored history about the filesystem.
+     */
+    @Test
+    public void aggregateMoveEvent() {
+        pathWatcher.mockFileDelete(APathTest.ROOT_TEST_DIR);
+        pathWatcher.mockFileCreation(APathTest.ROOT_TEST_DIR);
+
+        try {
+            Thread.sleep(APathTest.TIME_GAP_PUSH_INTERVAL);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        assertEquals("Failed to assert that the eventBag is holding both non aggregated events", 2, eventListener.getEvents().size());
+        assertThat("Failed to assert that the eventBag is holding the delete event", eventListener.getEvents().get(0), instanceOf(DeleteEvent.class));
+        assertThat("Failed to assert that the eventBag is holding the create event", eventListener.getEvents().get(1), instanceOf(CreateEvent.class));
     }
 
 }

@@ -1,5 +1,7 @@
 package org.rmatil.sync.event.aggregator.api;
 
+import org.rmatil.sync.event.aggregator.core.aggregator.IAggregator;
+
 import java.io.IOException;
 
 /**
@@ -29,6 +31,20 @@ public interface IEventAggregator {
      * @param eventListener The event listener which should be removed
      */
     void removeListener(IEventListener eventListener);
+
+    /**
+     * Add an aggregator to the event listener
+     *
+     * @param aggregator The aggregator to add
+     */
+    void addAggregator(IAggregator aggregator);
+
+    /**
+     * Removes the given aggregator from the list
+     *
+     * @param aggregator The aggregator to remove
+     */
+    void removeAggregator(IAggregator aggregator);
 
     /**
      * Set the interval in which eventBag are aggregated
