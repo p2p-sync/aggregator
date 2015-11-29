@@ -38,9 +38,11 @@ public class PathEventListener implements PathChangeListener {
 
         String hash = null;
         try {
-            hash = Hash.hash(Config.getDefaultConfiguration().getHashingAlgorithm(), path.toFile());
+            if (path.toFile().isFile()) {
+                hash = Hash.hash(Config.getDefaultConfiguration().getHashingAlgorithm(), path.toFile());
+            }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Could not hash on path creation: " + e.getMessage());
         }
 
         this.eventBag.add(new CreateEvent(path, path.toFile().getName(), hash, System.currentTimeMillis()));
@@ -51,9 +53,11 @@ public class PathEventListener implements PathChangeListener {
 
         String hash = null;
         try {
-            hash = Hash.hash(Config.getDefaultConfiguration().getHashingAlgorithm(), path.toFile());
+            if (path.toFile().isFile()) {
+                hash = Hash.hash(Config.getDefaultConfiguration().getHashingAlgorithm(), path.toFile());
+            }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Could not hash on path modification: " + e.getMessage());
         }
 
         this.eventBag.add(new ModifyEvent(path, path.toFile().getName(), hash, System.currentTimeMillis()));
