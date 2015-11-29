@@ -1,6 +1,7 @@
 package org.rmatil.sync.event.aggregator.api;
 
 import org.rmatil.sync.event.aggregator.core.aggregator.IAggregator;
+import org.rmatil.sync.event.aggregator.core.modifier.IModifier;
 
 import java.io.IOException;
 
@@ -45,6 +46,20 @@ public interface IEventAggregator {
      * @param aggregator The aggregator to remove
      */
     void removeAggregator(IAggregator aggregator);
+
+    /**
+     * Adds the given modifier
+     *
+     * @param modifier The modifier to add
+     */
+    void addModifier(IModifier modifier);
+
+    /**
+     * Removes the given modifier
+     *
+     * @param modifier The modifier to remove
+     */
+    void removeModifier(IModifier modifier);
 
     /**
      * Set the interval in which eventBag are aggregated

@@ -5,6 +5,7 @@ import org.rmatil.sync.event.aggregator.api.IEventAggregator;
 import org.rmatil.sync.event.aggregator.api.IEventListener;
 import org.rmatil.sync.event.aggregator.core.aggregator.IAggregator;
 import org.rmatil.sync.event.aggregator.core.events.IEvent;
+import org.rmatil.sync.event.aggregator.core.modifier.IModifier;
 import org.rmatil.sync.event.aggregator.core.pathwatcher.IPathWatcherFactory;
 
 import java.io.IOException;
@@ -62,6 +63,12 @@ public class EventAggregator implements Runnable, IEventAggregator {
     protected List<IEventListener> eventListener;
 
     /**
+     * A list of modifiers which are able to modify the list
+     * of events which are propagated further
+     */
+    protected List<IModifier> modifiers;
+
+    /**
      * A list of aggregators which each is responsible
      * to aggregate a particular bunch of certain events
      */
@@ -81,8 +88,9 @@ public class EventAggregator implements Runnable, IEventAggregator {
         this.rootPath = rootPath;
         this.aggregationInterval = DEFAULT_AGGREGATION_INTERVAL;
         this.pathEventListener = new PathEventListener();
-        this.eventListener = new ArrayList<IEventListener>();
-        this.aggregators = new ArrayList<IAggregator>();
+        this.eventListener = new ArrayList<>();
+        this.aggregators = new ArrayList<>();
+        this.modifiers = new ArrayList<>();
 
         this.pathWatcherExecutorService = Executors.newFixedThreadPool(EventAggregator.NUMBER_OF_PATHS_TO_WATCH);
 
@@ -109,6 +117,14 @@ public class EventAggregator implements Runnable, IEventAggregator {
 
     public void removeAggregator(IAggregator aggregator) {
         this.aggregators.remove(aggregator);
+    }
+
+    public void addModifier(IModifier modifier) {
+        this.modifiers.add(modifier);
+    }
+
+    public void removeModifier(IModifier modifier) {
+        this.modifiers.remove(modifier);
     }
 
     public void setAggregationInterval(long milliSeconds) {
@@ -159,6 +175,10 @@ public class EventAggregator implements Runnable, IEventAggregator {
         // do not notify about empty events
         if (aggregatedEvents.isEmpty()) {
             return;
+        }
+
+        for (IModifier modifier : modifiers) {
+            aggregatedEvents = modifier.modify(aggregatedEvents);
         }
 
         for (IAggregator aggregator : aggregators) {

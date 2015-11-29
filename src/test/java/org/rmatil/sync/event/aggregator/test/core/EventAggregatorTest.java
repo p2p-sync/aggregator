@@ -6,7 +6,6 @@ import org.rmatil.sync.event.aggregator.core.EventAggregator;
 import org.rmatil.sync.event.aggregator.core.aggregator.MoveAggregator;
 import org.rmatil.sync.event.aggregator.core.events.CreateEvent;
 import org.rmatil.sync.event.aggregator.core.events.DeleteEvent;
-import org.rmatil.sync.event.aggregator.core.events.MoveEvent;
 import org.rmatil.sync.event.aggregator.test.config.Config;
 import org.rmatil.sync.event.aggregator.test.mocks.MockPathWatcherFactory;
 import org.rmatil.sync.event.aggregator.test.mocks.PathWatcherMock;
