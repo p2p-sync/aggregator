@@ -1,4 +1,4 @@
-package org.rmatil.sync.event.aggregator.test.aggregator;
+package org.rmatil.sync.event.aggregator.test.core.aggregator;
 
 import org.junit.Before;
 import org.junit.BeforeClass;

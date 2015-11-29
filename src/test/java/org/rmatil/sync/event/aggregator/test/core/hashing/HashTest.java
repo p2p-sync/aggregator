@@ -1,4 +1,4 @@
-package org.rmatil.sync.event.aggregator.test.hashing;
+package org.rmatil.sync.event.aggregator.test.core.hashing;
 
 import org.junit.*;
 import org.junit.rules.ExpectedException;
