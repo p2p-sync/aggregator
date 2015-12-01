@@ -141,7 +141,7 @@ public class MoveAggretatorTest {
         assertEquals("First event is not the same instance of modify event", modifyEvent, firstEvent);
 
         IEvent event = results.get(1);
-        assertThat("Event is not instance of CreateEvent", event, instanceOf(MoveEvent.class));
+        assertThat("Event is not instance of MoveEvent", event, instanceOf(MoveEvent.class));
 
         MoveEvent moveEvent = (MoveEvent) event;
 
