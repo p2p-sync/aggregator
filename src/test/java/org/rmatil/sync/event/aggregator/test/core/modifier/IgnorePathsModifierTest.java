@@ -4,7 +4,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.rmatil.sync.event.aggregator.core.events.*;
 import org.rmatil.sync.event.aggregator.core.modifier.IgnorePathsModifier;
-import org.rmatil.sync.event.aggregator.core.modifier.RelativePathModifier;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,7 +14,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
-public class IgnoreOathsModifier {
+public class IgnorePathsModifierTest {
 
     private static IgnorePathsModifier ignorePathsModifier;
 

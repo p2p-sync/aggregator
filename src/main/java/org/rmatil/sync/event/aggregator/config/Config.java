@@ -1,5 +1,7 @@
 package org.rmatil.sync.event.aggregator.config;
 
+import org.rmatil.sync.commons.hashing.HashingAlgorithm;
+
 /**
  * The configuration for this component
  */

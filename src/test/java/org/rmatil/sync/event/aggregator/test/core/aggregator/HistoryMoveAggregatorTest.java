@@ -3,20 +3,30 @@ package org.rmatil.sync.event.aggregator.test.core.aggregator;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.rmatil.sync.event.aggregator.core.aggregator.MoveAggregator;
+import org.rmatil.sync.commons.path.Naming;
+import org.rmatil.sync.event.aggregator.core.aggregator.HistoryMoveAggregator;
 import org.rmatil.sync.event.aggregator.core.events.*;
 import org.rmatil.sync.event.aggregator.test.config.Config;
+import org.rmatil.sync.event.aggregator.test.mocks.ObjectManagerMock;
+import org.rmatil.sync.persistence.exceptions.InputOutputException;
+import org.rmatil.sync.version.api.IObjectManager;
+import org.rmatil.sync.version.api.PathType;
+import org.rmatil.sync.version.core.model.PathObject;
+import org.rmatil.sync.version.core.model.Version;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
-public class MoveAggretatorTest {
+public class HistoryMoveAggregatorTest {
 
-    protected static MoveAggregator moveAggregator;
+    protected static HistoryMoveAggregator moveAggregator;
+
+    protected static IObjectManager objectManagerMock;
 
     protected static List<IEvent> forceMoveEventList;
 
@@ -37,13 +47,16 @@ public class MoveAggretatorTest {
 
     @BeforeClass
     public static void setUp() {
-        moveAggregator = new MoveAggregator();
+        objectManagerMock = new ObjectManagerMock();
+        moveAggregator = new HistoryMoveAggregator(
+                objectManagerMock
+        );
     }
 
     @Before
     public void before() {
-        forceMoveEventList = new ArrayList<IEvent>();
-        forceNoMoveEventList = new ArrayList<IEvent>();
+        forceMoveEventList = new ArrayList<>();
+        forceNoMoveEventList = new ArrayList<>();
 
         firstTimestamp = System.currentTimeMillis();
 
@@ -185,5 +198,36 @@ public class MoveAggretatorTest {
         assertEquals("First event is not the 2nd create event", createEvent, results.get(0));
         assertThat("Second event is not the delete event", results.get(1), instanceOf(DeleteEvent.class));
         assertThat("Third event is not the 1st create event", results.get(2), instanceOf(CreateEvent.class));
+    }
+
+    @Test
+    public void testMoveEventWithHistory()
+            throws InputOutputException {
+
+        Version v1 = new Version("hashOfV1");
+        ArrayList<Version> versions = new ArrayList<>();
+        versions.add(v1);
+
+        PathObject testOldPath = new PathObject(
+                fileName,
+                Naming.getPathWithoutFileName(fileName, oldPath.toString()),
+                PathType.FILE,
+                false,
+                new ArrayList<>(),
+                versions
+        );
+
+        objectManagerMock.writeObject(testOldPath);
+        DeleteEvent deleteEvent = new DeleteEvent(oldPath, fileName, null, firstTimestamp);
+        CreateEvent createEvent = new CreateEvent(newPath, fileName, v1.getHash(), secondTimestamp);
+
+        List<IEvent> forceLookupInHistoryList = new ArrayList<>();
+        forceLookupInHistoryList.add(deleteEvent);
+        forceLookupInHistoryList.add(createEvent);
+
+        List<IEvent> results = moveAggregator.aggregate(forceLookupInHistoryList);
+
+        assertEquals("Result does not only contain the move event", 1, results.size());
+        assertThat("Event is not move event", results.get(0), instanceOf(MoveEvent.class));
     }
 }

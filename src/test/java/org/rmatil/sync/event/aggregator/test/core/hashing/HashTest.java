@@ -2,8 +2,8 @@ package org.rmatil.sync.event.aggregator.test.core.hashing;
 
 import org.junit.*;
 import org.junit.rules.ExpectedException;
-import org.rmatil.sync.event.aggregator.config.HashingAlgorithm;
-import org.rmatil.sync.event.aggregator.core.hashing.Hash;
+import org.rmatil.sync.commons.hashing.Hash;
+import org.rmatil.sync.commons.hashing.HashingAlgorithm;
 import org.rmatil.sync.event.aggregator.test.config.Config;
 import org.rmatil.sync.event.aggregator.test.core.APathTest;
 import org.rmatil.sync.event.aggregator.test.util.FileUtil;

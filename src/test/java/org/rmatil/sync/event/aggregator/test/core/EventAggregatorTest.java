@@ -3,11 +3,14 @@ package org.rmatil.sync.event.aggregator.test.core;
 import org.junit.*;
 import org.rmatil.sync.event.aggregator.api.IEventAggregator;
 import org.rmatil.sync.event.aggregator.core.EventAggregator;
-import org.rmatil.sync.event.aggregator.core.aggregator.MoveAggregator;
+import org.rmatil.sync.event.aggregator.core.aggregator.HistoryMoveAggregator;
+import org.rmatil.sync.event.aggregator.core.aggregator.IAggregator;
 import org.rmatil.sync.event.aggregator.core.events.CreateEvent;
 import org.rmatil.sync.event.aggregator.core.events.DeleteEvent;
+import org.rmatil.sync.event.aggregator.core.events.IEvent;
 import org.rmatil.sync.event.aggregator.test.config.Config;
 import org.rmatil.sync.event.aggregator.test.mocks.MockPathWatcherFactory;
+import org.rmatil.sync.event.aggregator.test.mocks.ObjectManagerMock;
 import org.rmatil.sync.event.aggregator.test.mocks.PathWatcherMock;
 import org.rmatil.sync.event.aggregator.test.util.FileUtil;
 import org.rmatil.sync.event.aggregator.test.util.PathChangeEventListener;
@@ -16,8 +19,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.isA;
 import static org.junit.Assert.*;
 
 /**
@@ -46,7 +51,7 @@ public class EventAggregatorTest {
     public static void setUp() {
         APathTest.setUp();
 
-        MoveAggregator moveAggregator = new MoveAggregator();
+        IAggregator moveAggregator = new HistoryMoveAggregator(new ObjectManagerMock());
         eventListener = new PathChangeEventListener();
         mockPathWatcherFactory = new MockPathWatcherFactory();
         eventAggregator = new EventAggregator(APathTest.ROOT_TEST_DIR, mockPathWatcherFactory);
@@ -162,9 +167,11 @@ public class EventAggregatorTest {
             e.printStackTrace();
         }
 
-        assertEquals("Failed to assert that the eventBag is holding both non aggregated events", 2, eventListener.getEvents().size());
-        assertThat("Failed to assert that the eventBag is holding the delete event", eventListener.getEvents().get(0), instanceOf(DeleteEvent.class));
-        assertThat("Failed to assert that the eventBag is holding the create event", eventListener.getEvents().get(1), instanceOf(CreateEvent.class));
+        List<IEvent> events = eventListener.getEvents();
+
+        assertEquals("Failed to assert that the eventBag is holding both non aggregated events", 2, events.size());
+        assertThat("Failed to assert that the eventBag is holding the delete event", events, hasItem(isA(DeleteEvent.class)));
+        assertThat("Failed to assert that the eventBag is holding the create event", events, hasItem(isA(CreateEvent.class)));
     }
 
 }

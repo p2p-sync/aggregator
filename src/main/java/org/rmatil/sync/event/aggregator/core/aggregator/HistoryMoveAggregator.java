@@ -1,24 +1,42 @@
 package org.rmatil.sync.event.aggregator.core.aggregator;
 
+import org.rmatil.sync.commons.hashing.Hash;
+import org.rmatil.sync.commons.hashing.HashingAlgorithm;
+import org.rmatil.sync.commons.list.Lists;
+import org.rmatil.sync.event.aggregator.config.Config;
 import org.rmatil.sync.event.aggregator.core.events.*;
+import org.rmatil.sync.persistence.exceptions.InputOutputException;
+import org.rmatil.sync.version.api.IObjectManager;
+import org.rmatil.sync.version.core.model.PathObject;
+import org.rmatil.sync.version.core.model.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 /**
- * Aggregates the combination of delete & creation events
- * to a single move element.
+ * Aggregates a delete and add event of the same hash to a MoveEvent.
  *
- * <i>Note</i>: Filenames are not considered while aggregating, since it is possible,
- * that two files are renamed to the name of the other in the event list.
- * This would loose track of the correct renaming (i.e. moving) events.
- * Therefore, we only consider events which are applied to
- * files with the same hash
+ * Since the filesystem notifies at the moment of the deletion, no
+ * hash of the deleted file can be created anymore. Therefore, this
+ * aggregator contacts the object manager for the hash of the last
+ * stored version of the delete file, and if they match, creates the move event.
+ *
+ * @see IObjectManager The object manager
  */
-public class MoveAggregator implements IAggregator {
+public class HistoryMoveAggregator implements IAggregator {
 
-    private static final Logger logger = LoggerFactory.getLogger(MoveAggregator.class);
+    final static Logger logger = LoggerFactory.getLogger(HistoryMoveAggregator.class);
+
+    /**
+     * An object manager to access stored versions
+     * of particular files
+     */
+    protected IObjectManager objectManager;
+
+    public HistoryMoveAggregator(IObjectManager objectManager) {
+        this.objectManager = objectManager;
+    }
 
     /**
      * Aggregates events based on the hash of a certain
@@ -41,16 +59,43 @@ public class MoveAggregator implements IAggregator {
 
         // add all events with the same file hash to the same place
         for (IEvent event : events) {
-            if (null == sameHashEvents.get(event.getHash())) {
-                sameHashEvents.put(event.getHash(), new ArrayList<IEvent>());
+            // enrich delete event with last stored hash of history to force a move event
+            // when an add event with the same hash occurs
+            if (event instanceof DeleteEvent && null == event.getHash()) {
+                try {
+                    PathObject object = this.objectManager.getObject(Hash.hash(Config.DEFAULT.getHashingAlgorithm(), event.getPath().toString()));
+                    if (null != object && object.getVersions().size() > 0) {
+                        Version lastVersion = object.getVersions().get(object.getVersions().size() - 1);
+
+                        event = new DeleteEvent(
+                                event.getPath(),
+                                event.getName(),
+                                lastVersion.getHash(),
+                                event.getTimestamp()
+                        );
+                    }
+                } catch (InputOutputException e) {
+                    logger.error(e.getMessage());
+                }
             }
 
-            List<IEvent> entries = sameHashEvents.get(event.getHash());
-            entries.add(event);
+            if (null == event.getHash()) {
+                if (null == sameHashEvents.get("__empty_key")) {
+                    sameHashEvents.put("__empty_key", new ArrayList<>());
+                }
+
+                sameHashEvents.get("__empty_key").add(event);
+            } else {
+                if (null == sameHashEvents.get(event.getHash())) {
+                    sameHashEvents.put(event.getHash(), new ArrayList<>());
+                }
+
+                sameHashEvents.get(event.getHash()).add(event);
+            }
         }
 
         // the final aggregated events which we will return
-        List<IEvent> aggregatedEvents = new ArrayList<IEvent>();
+        List<IEvent> aggregatedEvents = new ArrayList<>();
 
         for (Map.Entry<String, List<IEvent>> entry : sameHashEvents.entrySet()) {
             if (entry.getValue().size() < 2) {
@@ -60,12 +105,12 @@ public class MoveAggregator implements IAggregator {
             } else {
                 // add all events which we do not handle in this aggregator
                 // These events should not occur in between the deletion & creation event
-                aggregatedEvents.addAll(getInstances(entry.getValue(), ModifyEvent.class));
-                aggregatedEvents.addAll(getInstances(entry.getValue(), MoveEvent.class));
+                aggregatedEvents.addAll(Lists.getInstances(entry.getValue(), ModifyEvent.class));
+                aggregatedEvents.addAll(Lists.getInstances(entry.getValue(), MoveEvent.class));
 
                 // -> delete & add => move
-                List<IEvent> deleteHits = getInstances(entry.getValue(), DeleteEvent.class);
-                List<IEvent> createHits = getInstances(entry.getValue(), CreateEvent.class);
+                List<IEvent> deleteHits = Lists.getInstances(entry.getValue(), DeleteEvent.class);
+                List<IEvent> createHits = Lists.getInstances(entry.getValue(), CreateEvent.class);
 
                 if (! deleteHits.isEmpty() && ! createHits.isEmpty()) {
                     // if the same file is multiple times deleted, we can not assign the
@@ -93,6 +138,7 @@ public class MoveAggregator implements IAggregator {
                     if (deleteHit.getTimestamp() < createHit.getTimestamp()) {
                         MoveEvent moveEvent = new MoveEvent(deleteHit.getPath(), createHit.getPath(), createHit.getName(), createHit.getHash(), createHit.getTimestamp());
                         aggregatedEvents.add(moveEvent);
+                        logger.trace("Creating moveEvent from " + deleteHit.getPath() + " to " + createHit.getPath());
                     } else {
                         // we just add both events unchanged to the results
                         aggregatedEvents.add(deleteHit);
@@ -108,25 +154,4 @@ public class MoveAggregator implements IAggregator {
         return aggregatedEvents;
     }
 
-    /**
-     * Checks whether the given list contains an instance of the
-     * given class. If true, then a list containing the entries
-     * of the given list is returned. Otherwise, the list will be empty
-     *
-     * @param list  The list to check for entries
-     * @param clazz The class to check for occurrence
-     *
-     * @return A list containing all hits found for the given class
-     */
-    public static <E> List<E> getInstances(List<E> list, Class<? extends E> clazz) {
-        List<E> hits = new ArrayList<E>();
-
-        for (int i = 0; i < list.size(); i++) {
-            if (clazz.isInstance(list.get(i))) {
-                hits.add(list.get(i));
-            }
-        }
-
-        return hits;
-    }
 }
