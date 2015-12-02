@@ -19,7 +19,7 @@
         </repository>
         <repository>
             <id>version-mvn-repo</id>
-            <url>https://raw.github.com/p2p-sync/version/mvn-repo/</url>
+            <url>https://raw.github.com/p2p-sync/versions/mvn-repo/</url>
             <snapshots>
                 <enabled>true</enabled>
                 <updatePolicy>always</updatePolicy>
