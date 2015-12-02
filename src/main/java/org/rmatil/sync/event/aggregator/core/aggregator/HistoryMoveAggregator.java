@@ -62,6 +62,7 @@ public class HistoryMoveAggregator implements IAggregator {
             // enrich delete event with last stored hash of history to force a move event
             // when an add event with the same hash occurs
             if (event instanceof DeleteEvent && null == event.getHash()) {
+                logger.trace("Looking for versions of deleted path " + event.getPath().toString());
                 try {
                     PathObject object = this.objectManager.getObject(Hash.hash(Config.DEFAULT.getHashingAlgorithm(), event.getPath().toString()));
                     if (null != object && object.getVersions().size() > 0) {
