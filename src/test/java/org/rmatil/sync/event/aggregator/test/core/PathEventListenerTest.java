@@ -107,7 +107,7 @@ public class PathEventListenerTest {
         assertThat("Event is not instance of ModifyEvent", deleteEvent, instanceOf(DeleteEvent.class));
         assertEquals("Event name is not equals", deleteEvent.getEventName(), DeleteEvent.EVENT_NAME);
         assertEquals("DeleteEvent does not contain the same path element", file, deleteEvent.getPath());
-        assertNull("Filename is not null", deleteEvent.getName());
+        assertNotNull("Filename is null", deleteEvent.getName());
         assertNull("Hash is not null", deleteEvent.getHash());
     }
 }

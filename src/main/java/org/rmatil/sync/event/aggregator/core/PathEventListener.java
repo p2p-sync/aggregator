@@ -1,12 +1,12 @@
 package org.rmatil.sync.event.aggregator.core;
 
 import name.mitterdorfer.perlock.PathChangeListener;
+import org.rmatil.sync.commons.hashing.Hash;
 import org.rmatil.sync.event.aggregator.config.Config;
 import org.rmatil.sync.event.aggregator.core.events.CreateEvent;
 import org.rmatil.sync.event.aggregator.core.events.DeleteEvent;
 import org.rmatil.sync.event.aggregator.core.events.IEvent;
 import org.rmatil.sync.event.aggregator.core.events.ModifyEvent;
-import org.rmatil.sync.event.aggregator.core.hashing.Hash;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,7 +66,7 @@ public class PathEventListener implements PathChangeListener {
     public void onPathDeleted(Path path) {
         logger.trace("Got notified about the deletion of '" + path + "'");
 
-        this.eventBag.add(new DeleteEvent(path, null, null, System.currentTimeMillis()));
+        this.eventBag.add(new DeleteEvent(path, path.toFile().getName(), null, System.currentTimeMillis()));
     }
 
     /**
