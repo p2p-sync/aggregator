@@ -111,6 +111,10 @@ public class EventAggregator implements Runnable, IEventAggregator {
         this.eventListener.remove(eventListener);
     }
 
+    public List<IEventListener> getListeners() {
+        return this.eventListener;
+    }
+
     public void addAggregator(IAggregator aggregator) {
         this.aggregators.add(aggregator);
     }
@@ -119,12 +123,20 @@ public class EventAggregator implements Runnable, IEventAggregator {
         this.aggregators.remove(aggregator);
     }
 
+    public List<IAggregator> getAggregators() {
+        return this.aggregators;
+    }
+
     public void addModifier(IModifier modifier) {
         this.modifiers.add(modifier);
     }
 
     public void removeModifier(IModifier modifier) {
         this.modifiers.remove(modifier);
+    }
+
+    public List<IModifier> getModifiers() {
+        return this.modifiers;
     }
 
     public void setAggregationInterval(long milliSeconds) {

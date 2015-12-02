@@ -8,6 +8,8 @@ import org.rmatil.sync.event.aggregator.core.aggregator.IAggregator;
 import org.rmatil.sync.event.aggregator.core.events.CreateEvent;
 import org.rmatil.sync.event.aggregator.core.events.DeleteEvent;
 import org.rmatil.sync.event.aggregator.core.events.IEvent;
+import org.rmatil.sync.event.aggregator.core.modifier.IModifier;
+import org.rmatil.sync.event.aggregator.core.modifier.IgnorePathsModifier;
 import org.rmatil.sync.event.aggregator.test.config.Config;
 import org.rmatil.sync.event.aggregator.test.mocks.MockPathWatcherFactory;
 import org.rmatil.sync.event.aggregator.test.mocks.ObjectManagerMock;
@@ -19,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.hasItem;
@@ -172,6 +175,22 @@ public class EventAggregatorTest {
         assertEquals("Failed to assert that the eventBag is holding both non aggregated events", 2, events.size());
         assertThat("Failed to assert that the eventBag is holding the delete event", events, hasItem(isA(DeleteEvent.class)));
         assertThat("Failed to assert that the eventBag is holding the create event", events, hasItem(isA(CreateEvent.class)));
+    }
+
+    @Test
+    public void testAccessor() {
+        assertEquals("Event listener are not correctly registered", 1, eventAggregator.getListeners().size());
+        eventAggregator.removeListener(eventListener);
+        assertEquals("Listeners are not correctly removed", 0, eventAggregator.getListeners().size());
+        eventAggregator.addListener(eventListener);
+
+        IModifier modifier = new IgnorePathsModifier(new ArrayList<>());
+        eventAggregator.addModifier(modifier);
+        assertEquals("Modifier are not correctly registered", 1, eventAggregator.getModifiers().size());
+        eventAggregator.removeModifier(modifier);
+        assertEquals("Modifier are not correctly removed", 0, eventAggregator.getModifiers().size());
+
+        assertEquals("AggregationInterval is not correctly set", APathTest.TIME_GAP_PUSH_INTERVAL, eventAggregator.getAggregationInterval());
     }
 
 }

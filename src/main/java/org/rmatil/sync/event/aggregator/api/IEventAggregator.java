@@ -4,6 +4,7 @@ import org.rmatil.sync.event.aggregator.core.aggregator.IAggregator;
 import org.rmatil.sync.event.aggregator.core.modifier.IModifier;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Enables to add multiple event listeners to subscribe
@@ -34,6 +35,13 @@ public interface IEventAggregator {
     void removeListener(IEventListener eventListener);
 
     /**
+     * Returns the list of all registered event listeners
+     *
+     * @return The event listeners
+     */
+    public List<IEventListener> getListeners();
+
+    /**
      * Add an aggregator to the event listener
      *
      * @param aggregator The aggregator to add
@@ -48,6 +56,13 @@ public interface IEventAggregator {
     void removeAggregator(IAggregator aggregator);
 
     /**
+     * Returns the list of all registered aggregators
+     *
+     * @return The aggregators
+     */
+    List<IAggregator> getAggregators();
+
+    /**
      * Adds the given modifier
      *
      * @param modifier The modifier to add
@@ -60,6 +75,13 @@ public interface IEventAggregator {
      * @param modifier The modifier to remove
      */
     void removeModifier(IModifier modifier);
+
+    /**
+     * Returns the list of all registered modifiers
+     *
+     * @return The modifiers
+     */
+    List<IModifier> getModifiers();
 
     /**
      * Set the interval in which eventBag are aggregated
