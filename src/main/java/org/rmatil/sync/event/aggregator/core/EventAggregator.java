@@ -184,17 +184,17 @@ public class EventAggregator implements Runnable, IEventAggregator {
         // sort events according to their timestamp
         Collections.sort(aggregatedEvents);
 
-        // do not notify about empty events
-        if (aggregatedEvents.isEmpty()) {
-            return;
-        }
-
         for (IModifier modifier : modifiers) {
             aggregatedEvents = modifier.modify(aggregatedEvents);
         }
 
         for (IAggregator aggregator : aggregators) {
             aggregatedEvents = aggregator.aggregate(aggregatedEvents);
+        }
+
+        // do not notify about empty events
+        if (aggregatedEvents.isEmpty()) {
+            return;
         }
 
         // notify all event listeners for the made changes
