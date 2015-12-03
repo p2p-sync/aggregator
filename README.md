@@ -58,3 +58,20 @@ Aggregators are responsible to aggregate a bunch of filesystem events into one o
 The HistoryMoveAggregator tries to detect a move of a file or directory by the combination of a delete and create event.
 If a well-defined hash of the file contents are equal, then one can assume, that the remove and the newly created file are identical. However, since the computation of a hash over contents of a deleted file is not possible, this aggregator relies
 on a local history of file contents. For more information about versioning of files, see [P2P-Sync Versions](https://github.com/p2p-sync/versions).
+
+# License
+```
+   Copyright 2015 rmatil
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+```
