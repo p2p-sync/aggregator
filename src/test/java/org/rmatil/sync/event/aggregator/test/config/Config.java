@@ -10,6 +10,8 @@ public enum Config {
 
     private String testFileName1 = "file1.txt";
 
+    private String testDirName1 = "myDir";
+
     private long timeGapPushInterval;
 
     Config() {
@@ -27,5 +29,9 @@ public enum Config {
 
     public String getTestFileName1() {
         return this.testFileName1;
+    }
+
+    public String getTestDirName1() {
+        return this.testDirName1;
     }
 }

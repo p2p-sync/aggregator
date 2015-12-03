@@ -76,6 +76,44 @@ public class FileUtil {
     }
 
     /**
+     * Creates a test directory in the given root path
+     *
+     * @param rootDir The path to the root dir
+     *
+     * @return The path which was created
+     */
+    public static Path createTestDir(Path rootDir) {
+        Path testDirPath = rootDir.resolve(Config.DEFAULT.getTestDirName1());
+
+        try {
+            testDirPath = Files.createDirectory(testDirPath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return testDirPath;
+    }
+
+    /**
+     * Deletes the test dir in the root path, if existing
+     *
+     * @param rootDir The test root dir in which the test dir exists
+     *
+     * @return The path which was deleted
+     */
+    public static Path deleteTestDir(Path rootDir) {
+        Path testDirPath = rootDir.resolve(Config.DEFAULT.getTestDirName1());
+
+        File dir = testDirPath.toFile();
+
+        if (dir.exists()) {
+            delete(dir);
+        }
+
+        return testDirPath;
+    }
+
+    /**
      * Deletes recursively the given file (if it is a directory)
      * or just removes itself
      *
