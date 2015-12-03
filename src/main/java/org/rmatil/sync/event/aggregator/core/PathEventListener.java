@@ -74,14 +74,14 @@ public class PathEventListener implements PathChangeListener {
      *
      * @return The aggregated eventBag
      */
-    public List<IEvent> getEventBag() {
+    public synchronized List<IEvent> getEventBag() {
         return eventBag;
     }
 
     /**
      * Clears the aggregated eventBag
      */
-    public void clearEvents() {
+    public synchronized void clearEvents() {
         this.eventBag.clear();
     }
 }
