@@ -31,7 +31,7 @@ Use Maven to add this component as your dependency:
 
 # Architectural Overview
 
-[![Architectural Overview](https://github.com/p2p-sync/aggregator/blob/master/src/main/resources/img/architectural-overview.png)](https://github.com/p2p-sync/aggregator/blob/master/src/main/resources/img/architectural-overview.png)
+[![Architectural Overview](https://github.com/p2p-sync/aggregator/blob/master/src/main/resources/img/architectural-overview.svg)](https://github.com/p2p-sync/aggregator/blob/master/src/main/resources/img/architectural-overview.svg)
 
 This component relies on the functionality of [Daniel Mittendorfer's Perlock](https://github.com/danielmitterdorfer/perlock) to get notified about changes in a directory. These events are then processed by the [EventAggregator](https://github.com/p2p-sync/aggregator/blob/master/src/main/java/org/rmatil/sync/event/aggregator/api/IEventAggregator.java). Any registered event listener on the EventAggregator will finally receive all events still remaining after processing. 
 
