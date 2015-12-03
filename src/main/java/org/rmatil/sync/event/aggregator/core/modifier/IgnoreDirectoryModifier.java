@@ -2,6 +2,8 @@ package org.rmatil.sync.event.aggregator.core.modifier;
 
 import org.rmatil.sync.event.aggregator.core.events.IEvent;
 import org.rmatil.sync.event.aggregator.core.events.ModifyEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +14,8 @@ import java.util.List;
  */
 public class IgnoreDirectoryModifier implements IModifier {
 
+    final static Logger logger = LoggerFactory.getLogger(IgnoreDirectoryModifier.class);
+
     @Override
     public List<IEvent> modify(List<IEvent> events) {
         List<IEvent> modifiedEvents = new ArrayList<>();
@@ -19,6 +23,8 @@ public class IgnoreDirectoryModifier implements IModifier {
         for (IEvent event : events) {
             if (! (event instanceof ModifyEvent && event.getPath().toFile().isDirectory())) {
                 modifiedEvents.add(event);
+            } else {
+                logger.trace("Ignoring modify event for directory " + event.getPath());
             }
         }
 
