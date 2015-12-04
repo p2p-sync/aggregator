@@ -22,6 +22,10 @@ public class CreateEvent extends AEvent {
         super.timestamp = timestamp;
     }
 
+    public CreateEvent(CreateEvent createEvent) {
+        this(createEvent.getPath(), createEvent.getName(), createEvent.getHash(), createEvent.getTimestamp());
+    }
+
     public String getEventName() {
         return EVENT_NAME;
     }

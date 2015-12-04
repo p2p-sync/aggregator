@@ -19,6 +19,10 @@ public class ModifyEvent extends AEvent {
         super.timestamp = timestamp;
     }
 
+    public ModifyEvent(ModifyEvent modifyEvent) {
+        this(modifyEvent.getPath(), modifyEvent.getName(), modifyEvent.getHash(), modifyEvent.getTimestamp());
+    }
+
     public String getEventName() {
         return EVENT_NAME;
     }

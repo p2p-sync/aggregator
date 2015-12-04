@@ -23,6 +23,10 @@ public class MoveEvent extends AEvent {
         super.timestamp = timestamp;
     }
 
+    public MoveEvent(MoveEvent moveEvent) {
+        this(moveEvent.getPath(), moveEvent.getNewPath(), moveEvent.getName(), moveEvent.getHash(), moveEvent.getTimestamp());
+    }
+
     public Path getNewPath() {
         return this.newPath;
     }

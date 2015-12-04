@@ -19,6 +19,10 @@ public class DeleteEvent extends AEvent {
         super.timestamp = timestamp;
     }
 
+    public DeleteEvent(DeleteEvent deleteEvent) {
+        this(deleteEvent.getPath(), deleteEvent.getName(), deleteEvent.getHash(), deleteEvent.getTimestamp());
+    }
+
     public String getEventName() {
         return EVENT_NAME;
     }
