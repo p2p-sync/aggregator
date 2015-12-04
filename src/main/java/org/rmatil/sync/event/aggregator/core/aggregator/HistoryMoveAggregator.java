@@ -67,7 +67,7 @@ public class HistoryMoveAggregator implements IAggregator {
                     PathObject object = this.objectManager.getObject(Hash.hash(Config.DEFAULT.getHashingAlgorithm(), event.getPath().toString()));
                     if (null != object && object.getVersions().size() > 0) {
                         Version lastVersion = object.getVersions().get(object.getVersions().size() - 1);
-
+                        logger.trace("Create delete event for path " + event.getPath().toString());
                         event = new DeleteEvent(
                                 event.getPath(),
                                 event.getName(),
@@ -76,7 +76,7 @@ public class HistoryMoveAggregator implements IAggregator {
                         );
                     }
                 } catch (InputOutputException e) {
-                    logger.error(e.getMessage());
+                    logger.error("Failed to get versions of deleted path. Message: " + e.getMessage());
                 }
             }
 
