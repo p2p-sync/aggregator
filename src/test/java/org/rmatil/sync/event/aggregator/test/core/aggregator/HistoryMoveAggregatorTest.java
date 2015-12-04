@@ -15,6 +15,7 @@ import org.rmatil.sync.version.core.model.PathObject;
 import org.rmatil.sync.version.core.model.Version;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -80,6 +81,24 @@ public class HistoryMoveAggregatorTest {
 
         forceNoMoveEventList.add(deleteEvent2);
         forceNoMoveEventList.add(createEvent2);
+    }
+
+    @Test
+    public void testMultipleDirCreation() {
+        List<IEvent> events = new ArrayList<>();
+
+        CreateEvent c1 = new CreateEvent(Config.DEFAULT.getRootTestDir().resolve(Paths.get("myDir1")), "myDir1", null, System.currentTimeMillis());
+        CreateEvent c2 = new CreateEvent(Config.DEFAULT.getRootTestDir().resolve(Paths.get("myDir2")), "myDir2", null, System.currentTimeMillis());
+        CreateEvent c3 = new CreateEvent(Config.DEFAULT.getRootTestDir().resolve(Paths.get("myDir3")), "myDir3", null, System.currentTimeMillis());
+        CreateEvent c4 = new CreateEvent(Config.DEFAULT.getRootTestDir().resolve(Paths.get("myDir4")), "myDir4", null, System.currentTimeMillis());
+
+        events.add(c1);
+        events.add(c2);
+        events.add(c3);
+        events.add(c4);
+
+        List<IEvent> results = moveAggregator.aggregate(events);
+        assertEquals("Results do not contain all dir creation events", 4, results.size());
     }
 
     @Test

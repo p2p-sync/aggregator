@@ -146,6 +146,10 @@ public class HistoryMoveAggregator implements IAggregator {
                         aggregatedEvents.add(createHit);
                     }
 
+                } else {
+                    // finally add all events if no match could have been found
+                    aggregatedEvents.addAll(deleteHits);
+                    aggregatedEvents.addAll(createHits);
                 }
             }
         }
