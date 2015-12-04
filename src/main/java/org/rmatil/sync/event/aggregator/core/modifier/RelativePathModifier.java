@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -28,6 +29,7 @@ public class RelativePathModifier implements IModifier {
 
     @Override
     public List<IEvent> modify(List<IEvent> events) {
+        Collections.sort(events);
         List<IEvent> modifiedEvents = new ArrayList<>();
 
         for (IEvent event : events) {
@@ -55,6 +57,7 @@ public class RelativePathModifier implements IModifier {
             modifiedEvents.add(e);
         }
 
+        Collections.sort(modifiedEvents);
         return modifiedEvents;
     }
 }

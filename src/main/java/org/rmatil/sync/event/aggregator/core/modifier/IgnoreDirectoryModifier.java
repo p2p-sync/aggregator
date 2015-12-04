@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -18,6 +19,7 @@ public class IgnoreDirectoryModifier implements IModifier {
 
     @Override
     public List<IEvent> modify(List<IEvent> events) {
+        Collections.sort(events);
         List<IEvent> modifiedEvents = new ArrayList<>();
 
         for (IEvent event : events) {
@@ -28,6 +30,7 @@ public class IgnoreDirectoryModifier implements IModifier {
             }
         }
 
+        Collections.sort(modifiedEvents);
         return modifiedEvents;
     }
 }
