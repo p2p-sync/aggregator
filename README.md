@@ -31,7 +31,7 @@ Use Maven to add this component as your dependency:
 
 # Architectural Overview
 
-[![Architectural Overview](https://github.com/p2p-sync/aggregator/blob/master/src/main/resources/img/architectural-overview.png)](https://github.com/p2p-sync/aggregator/blob/master/src/main/resources/img/architectural-overview.png)
+[![Architectural Overview](https://cdn.rawgit.com/p2p-sync/aggregator/master/src/main/resources/img/architectural-overview.svg)](https://cdn.rawgit.com/p2p-sync/aggregator/master/src/main/resources/img/architectural-overview.svg)
 
 This component relies on the functionality of [Daniel Mittendorfer's Perlock](https://github.com/danielmitterdorfer/perlock) to get notified about changes in a directory. These events are then processed by the [EventAggregator](https://github.com/p2p-sync/aggregator/blob/master/src/main/java/org/rmatil/sync/event/aggregator/api/IEventAggregator.java). Any registered event listener on the EventAggregator will finally receive all events still remaining after processing. 
 
@@ -58,3 +58,20 @@ Aggregators are responsible to aggregate a bunch of filesystem events into one o
 The HistoryMoveAggregator tries to detect a move of a file or directory by the combination of a delete and create event.
 If a well-defined hash of the file contents are equal, then one can assume, that the remove and the newly created file are identical. However, since the computation of a hash over contents of a deleted file is not possible, this aggregator relies
 on a local history of file contents. For more information about versioning of files, see [P2P-Sync Versions](https://github.com/p2p-sync/versions).
+
+# License
+```
+   Copyright 2015 rmatil
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+```
