@@ -10,6 +10,7 @@ import org.rmatil.sync.event.aggregator.core.events.DeleteEvent;
 import org.rmatil.sync.event.aggregator.core.events.IEvent;
 import org.rmatil.sync.event.aggregator.core.modifier.IModifier;
 import org.rmatil.sync.event.aggregator.core.modifier.IgnorePathsModifier;
+import org.rmatil.sync.event.aggregator.core.modifier.RelativePathModifier;
 import org.rmatil.sync.event.aggregator.test.config.Config;
 import org.rmatil.sync.event.aggregator.test.mocks.MockPathWatcherFactory;
 import org.rmatil.sync.event.aggregator.test.mocks.ObjectManagerMock;
@@ -50,17 +51,20 @@ public class EventAggregatorTest {
 
     protected static PathWatcherMock pathWatcher;
 
+    protected static IAggregator moveAggregator;
+
     @BeforeClass
     public static void setUp() {
         APathTest.setUp();
 
-        IAggregator moveAggregator = new HistoryMoveAggregator(new ObjectManagerMock());
+        moveAggregator = new HistoryMoveAggregator(new ObjectManagerMock());
         eventListener = new PathChangeEventListener();
         mockPathWatcherFactory = new MockPathWatcherFactory();
         eventAggregator = new EventAggregator(APathTest.ROOT_TEST_DIR, mockPathWatcherFactory);
         eventAggregator.setAggregationInterval(APathTest.TIME_GAP_PUSH_INTERVAL);
         eventAggregator.addAggregator(moveAggregator);
         eventAggregator.addListener(eventListener);
+        eventAggregator.addModifier(new RelativePathModifier(Config.DEFAULT.getRootTestDir()));
 
         try {
             logger.debug("Starting event aggregator");
@@ -186,9 +190,13 @@ public class EventAggregatorTest {
 
         IModifier modifier = new IgnorePathsModifier(new ArrayList<>());
         eventAggregator.addModifier(modifier);
-        assertEquals("Modifier are not correctly registered", 1, eventAggregator.getModifiers().size());
+        assertEquals("Modifier are not correctly registered", 2, eventAggregator.getModifiers().size());
         eventAggregator.removeModifier(modifier);
-        assertEquals("Modifier are not correctly removed", 0, eventAggregator.getModifiers().size());
+        assertEquals("Modifier are not correctly removed", 1, eventAggregator.getModifiers().size());
+
+        assertEquals("Aggregators are not correctly registered", 1, eventAggregator.getAggregators().size());
+        eventAggregator.removeAggregator(moveAggregator);
+        assertEquals("Aggregators are not correctly removed", 0, eventAggregator.getAggregators().size());
 
         assertEquals("AggregationInterval is not correctly set", APathTest.TIME_GAP_PUSH_INTERVAL, eventAggregator.getAggregationInterval());
     }
