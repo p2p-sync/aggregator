@@ -145,4 +145,26 @@ public class AddDirectoryContentModifierTest {
         assertThat("No modify event should be inside results", events, not(hasItem(isA(ModifyEvent.class))));
         assertThat("No move event should be inside results", events, not(hasItem(isA(MoveEvent.class))));
     }
+
+    @Test
+    public void testModify() {
+        Path relativePath = Config.DEFAULT.getRootTestDir().relativize(dir);
+        ModifyEvent modifyEvent = new ModifyEvent(
+                relativePath,
+                relativePath.getFileName().toString(),
+                null,
+                System.currentTimeMillis()
+        );
+
+        List<IEvent> events = new ArrayList<>();
+        events.add(modifyEvent);
+
+        List<IEvent> results = addDirectoryContentModifier.modify(events);
+
+        // expected events
+        // 1: only modify event
+        assertEquals("Not expected number of results modified", 1, results.size());
+        assertThat("No modify event should be inside results", events, hasItem(isA(ModifyEvent.class)));
+
+    }
 }

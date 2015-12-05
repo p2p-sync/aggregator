@@ -26,21 +26,21 @@ public class AddDirectoryContentModifier implements IModifier {
 
     protected IObjectStore objectStore;
 
-	protected Path rootDir;
+    protected Path rootDir;
 
     public AddDirectoryContentModifier(Path rootDir, IObjectStore objectStore) {
         this.objectStore = objectStore;
-		this.rootDir = rootDir;
+        this.rootDir = rootDir;
     }
 
     @Override
     public List<IEvent> modify(List<IEvent> events) {
-		Collections.sort(events);
-		List<IEvent> modifiedEvents = new ArrayList<>();
+        Collections.sort(events);
+        List<IEvent> modifiedEvents = new ArrayList<>();
 
         for (IEvent event : events) {
             if (event instanceof DeleteEvent) {
-				modifiedEvents.add(event);
+                modifiedEvents.add(event);
                 try {
                     // create for each child of the path a delete event
                     List<PathObject> deletedChildren = this.objectStore.getObjectManager().getChildren(event.getPath().toString());
@@ -53,22 +53,22 @@ public class AddDirectoryContentModifier implements IModifier {
                     logger.error("Failed to get deleted objects from directory " + event.getPath().toString() + ". Message: " + e.getMessage());
                 }
             } else if (event instanceof CreateEvent) {
-				modifiedEvents.add(event);
+                modifiedEvents.add(event);
                 // create createEvent for each file contained in the dir
                 if (this.rootDir.resolve(event.getPath()).toFile().isDirectory()) {
-					modifiedEvents.addAll(createCreateEventForChildren(this.rootDir.resolve(event.getPath()).toFile(), event.getTimestamp()));
+                    modifiedEvents.addAll(createCreateEventForChildren(this.rootDir.resolve(event.getPath()).toFile(), event.getTimestamp()));
                 }
             } else {
                 modifiedEvents.add(event);
             }
         }
 
-		Collections.sort(modifiedEvents);
+        Collections.sort(modifiedEvents);
         return modifiedEvents;
     }
 
     protected List<IEvent> createCreateEventForChildren(File parentDirectory, long timestamp) {
-		List<IEvent> events = new ArrayList<>();
+        List<IEvent> events = new ArrayList<>();
         if (null == parentDirectory) {
             return events;
         }
@@ -83,12 +83,12 @@ public class AddDirectoryContentModifier implements IModifier {
                     logger.error("Could not hash contents of file " + file.toPath().toString());
                 }
             } else if (file.isDirectory()) {
-				// create createEvent for subdir
-				events.add(new CreateEvent(this.rootDir.relativize(file.toPath()), file.getName(), null, timestamp));
+                // create createEvent for subdir
+                events.add(new CreateEvent(this.rootDir.relativize(file.toPath()), file.getName(), null, timestamp));
                 events.addAll(this.createCreateEventForChildren(file, timestamp));
             }
         }
 
-		return events;
+        return events;
     }
 }
