@@ -104,8 +104,6 @@ public class EventAggregator implements IEventListener, IEventAggregator {
         } else {
             this.pathWatcher = pathWatcherFactory.createNonRecursiveWatcher(pathWatcherExecutorService, this.rootPath, this.pathEventListener);
         }
-
-        this.aggregationExecutorService = Executors.newSingleThreadScheduledExecutor();
     }
 
     public void addListener(IEventListener eventListener) {
@@ -168,6 +166,7 @@ public class EventAggregator implements IEventListener, IEventAggregator {
         }
 
         // schedule the pathEventListener to notify us if he has events on the fixed interval
+        this.aggregationExecutorService = Executors.newSingleThreadScheduledExecutor();
         this.aggregationExecutorService.scheduleAtFixedRate(this.pathEventListener, 0, this.aggregationInterval, TimeUnit.MILLISECONDS);
     }
 

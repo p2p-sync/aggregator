@@ -99,14 +99,14 @@ public class PathEventListener implements PathChangeListener, Runnable {
                 }
             }
 
+            this.eventBag.clear();
+
             Collections.sort(aggregatedEvents);
 
             // notify all listeners about our changes
             for (IEventListener listener : this.eventListeners) {
                 listener.onChange(aggregatedEvents);
             }
-
-            this.eventBag.clear();
         } catch (Exception e) {
             logger.error("Thread error. Message: " + e.getMessage());
         }

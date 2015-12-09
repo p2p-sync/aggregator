@@ -19,9 +19,11 @@ public abstract class APathTest {
     public static final Path ROOT_TEST_DIR = Config.DEFAULT.getRootTestDir();
 
     /**
-     * Push interval for event aggregator
+     * Push interval for path event listener which notifies event aggregator
      */
     public static final long TIME_GAP_PUSH_INTERVAL = Config.DEFAULT.getTimeGapPushInterval();
+
+    public static final long TIME_GAP_PUSH_WAIT_INTERVAL = TIME_GAP_PUSH_INTERVAL + 1000L;
 
     /**
      * Creates the test directory if not existing yet

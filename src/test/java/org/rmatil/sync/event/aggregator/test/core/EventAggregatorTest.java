@@ -66,31 +66,26 @@ public class EventAggregatorTest {
         eventAggregator.addListener(eventListener);
         eventAggregator.addModifier(new RelativePathModifier(Config.DEFAULT.getRootTestDir()));
 
-        try {
-            logger.debug("Starting event aggregator");
-            eventAggregator.start();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         pathWatcher = (PathWatcherMock) mockPathWatcherFactory.getPathWatcherInstance();
     }
 
     @AfterClass
     public static void tearDown() {
-        logger.debug("Stopping event aggregator");
-        eventAggregator.stop();
-
         APathTest.tearDown();
     }
 
     @Before
-    public void before() {
+    public void before()
+            throws IOException {
         FileUtil.deleteTestFile(ROOT_TEST_DIR);
+        logger.debug("Starting event aggregator");
+        eventAggregator.start();
     }
 
     @After
     public void after() {
+        logger.debug("Stopping event aggregator");
+        eventAggregator.stop();
         FileUtil.deleteTestFile(ROOT_TEST_DIR);
     }
 
@@ -103,7 +98,7 @@ public class EventAggregatorTest {
         pathWatcher.mockFileCreation(APathTest.ROOT_TEST_DIR);
 
         try {
-            Thread.sleep(APathTest.TIME_GAP_PUSH_INTERVAL);
+            Thread.sleep(APathTest.TIME_GAP_PUSH_WAIT_INTERVAL);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -117,7 +112,7 @@ public class EventAggregatorTest {
         pathWatcher.mockFileCreation(APathTest.ROOT_TEST_DIR);
 
         try {
-            Thread.sleep(APathTest.TIME_GAP_PUSH_INTERVAL);
+            Thread.sleep(APathTest.TIME_GAP_PUSH_WAIT_INTERVAL);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -126,7 +121,7 @@ public class EventAggregatorTest {
         pathWatcher.mockFileModify(APathTest.ROOT_TEST_DIR);
 
         try {
-            Thread.sleep(APathTest.TIME_GAP_PUSH_INTERVAL);
+            Thread.sleep(APathTest.TIME_GAP_PUSH_WAIT_INTERVAL);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -140,7 +135,7 @@ public class EventAggregatorTest {
         pathWatcher.mockFileCreation(APathTest.ROOT_TEST_DIR);
 
         try {
-            Thread.sleep(APathTest.TIME_GAP_PUSH_INTERVAL);
+            Thread.sleep(APathTest.TIME_GAP_PUSH_WAIT_INTERVAL);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -149,7 +144,7 @@ public class EventAggregatorTest {
         pathWatcher.mockFileDelete(APathTest.ROOT_TEST_DIR);
 
         try {
-            Thread.sleep(APathTest.TIME_GAP_PUSH_INTERVAL);
+            Thread.sleep(APathTest.TIME_GAP_PUSH_WAIT_INTERVAL);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -169,7 +164,7 @@ public class EventAggregatorTest {
         pathWatcher.mockFileCreation(APathTest.ROOT_TEST_DIR);
 
         try {
-            Thread.sleep(APathTest.TIME_GAP_PUSH_INTERVAL);
+            Thread.sleep(APathTest.TIME_GAP_PUSH_WAIT_INTERVAL);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
