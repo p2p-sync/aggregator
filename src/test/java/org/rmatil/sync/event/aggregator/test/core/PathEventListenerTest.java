@@ -1,6 +1,8 @@
 package org.rmatil.sync.event.aggregator.test.core;
 
+import name.mitterdorfer.perlock.PathChangeListener;
 import org.junit.*;
+import org.rmatil.sync.event.aggregator.api.IEventListener;
 import org.rmatil.sync.event.aggregator.core.PathEventListener;
 import org.rmatil.sync.event.aggregator.core.events.CreateEvent;
 import org.rmatil.sync.event.aggregator.core.events.DeleteEvent;
@@ -8,52 +10,76 @@ import org.rmatil.sync.event.aggregator.core.events.IEvent;
 import org.rmatil.sync.event.aggregator.core.events.ModifyEvent;
 import org.rmatil.sync.event.aggregator.test.config.Config;
 import org.rmatil.sync.event.aggregator.test.util.FileUtil;
+import org.rmatil.sync.event.aggregator.test.util.PathChangeEventListener;
 
 import java.nio.file.Path;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.*;
 
 public class PathEventListenerTest {
 
-    private static final Path ROOT_TEST_DIR = Config.DEFAULT.getRootTestDir();
-    private static PathEventListener listener;
+    private static final Path ROOT_TEST_DIR        = Config.DEFAULT.getRootTestDir();
+    private static final long AGGREGATION_INTERVAL = Config.DEFAULT.getTimeGapPushInterval();
+
+    private static PathEventListener        listener;
+    private static PathChangeEventListener  eventListener;
+    private static ScheduledExecutorService aggregationExecutorService;
 
     @BeforeClass
     public static void setUp() {
         APathTest.setUp();
 
         listener = new PathEventListener();
+        eventListener = new PathChangeEventListener();
+        listener.addListener(eventListener);
     }
 
     @AfterClass
     public static void tearDown() {
         APathTest.tearDown();
+        aggregationExecutorService.shutdownNow();
     }
 
     @Before
-    public void before() {
-        listener.clearEvents();
+    public void before()
+            throws InterruptedException {
         FileUtil.deleteTestFile(ROOT_TEST_DIR);
+        eventListener.getEvents().clear();
+        // we have to recreate the executor otherwise we would attempt
+        // to create new threads on a terminated executor service
+        aggregationExecutorService = Executors.newSingleThreadScheduledExecutor();
+        aggregationExecutorService.scheduleAtFixedRate(listener, 0, AGGREGATION_INTERVAL, TimeUnit.MILLISECONDS);
     }
 
     @After
-    public void after() {
-        listener.clearEvents();
+    public void after()
+            throws InterruptedException {
         FileUtil.deleteTestFile(ROOT_TEST_DIR);
+        eventListener.getEvents().clear();
+
+        aggregationExecutorService.awaitTermination(AGGREGATION_INTERVAL, TimeUnit.MILLISECONDS);
+        aggregationExecutorService.shutdownNow();
     }
 
     @Test
-    public void testOnPathCreated() {
-        assertTrue("Event bag is not empty at the beginning", listener.getEventBag().isEmpty());
+    public void testOnPathCreated()
+            throws InterruptedException {
+        assertTrue("Event bag is not empty at the beginning", eventListener.getEvents().isEmpty());
 
         Path file = FileUtil.createTestFile(ROOT_TEST_DIR);
         listener.onPathCreated(file);
 
-        assertFalse("Event bag does not contain the new creation event", listener.getEventBag().isEmpty());
-        assertEquals("Event bag does not contain only one element", 1, listener.getEventBag().size());
+        // wait until our listener is notified
+        Thread.sleep(AGGREGATION_INTERVAL + 100L);
 
-        IEvent event = listener.getEventBag().get(0);
+        assertFalse("Event bag does not contain the new creation event", eventListener.getEvents().isEmpty());
+        assertEquals("Event bag does not contain only one element", 1, eventListener.getEvents().size());
+
+        IEvent event = eventListener.getEvents().get(0);
 
         assertThat("Event is not instance of CreateEvent", event, instanceOf(CreateEvent.class));
         assertEquals("Event name is not equals", event.getEventName(), CreateEvent.EVENT_NAME);
@@ -62,8 +88,9 @@ public class PathEventListenerTest {
 
 
     @Test
-    public void testOnPathModified() {
-        assertTrue("Event bag is not empty at the beginning", listener.getEventBag().isEmpty());
+    public void testOnPathModified()
+            throws InterruptedException {
+        assertTrue("Event bag is not empty at the beginning", eventListener.getEvents().isEmpty());
 
         Path file = FileUtil.createTestFile(ROOT_TEST_DIR);
         listener.onPathCreated(file);
@@ -71,14 +98,17 @@ public class PathEventListenerTest {
         Path fileModify = FileUtil.modifyTestFile(ROOT_TEST_DIR);
         listener.onPathModified(fileModify);
 
-        assertEquals("Event bag does not contain create and modify event", 2, listener.getEventBag().size());
+        // wait until our listener is notified
+        Thread.sleep(AGGREGATION_INTERVAL + 100L);
 
-        IEvent createEvent = listener.getEventBag().get(0);
+        assertEquals("Event bag does not contain create and modify event", 2, eventListener.getEvents().size());
+
+        IEvent createEvent = eventListener.getEvents().get(0);
 
         assertThat("Event is not instance of CreateEvent", createEvent, instanceOf(CreateEvent.class));
         assertEquals("CreateEvent does not contain the same path element", file, createEvent.getPath());
 
-        IEvent modifyEvent = listener.getEventBag().get(1);
+        IEvent modifyEvent = eventListener.getEvents().get(1);
 
         assertThat("Event is not instance of ModifyEvent", modifyEvent, instanceOf(ModifyEvent.class));
         assertEquals("Event name is not equals", modifyEvent.getEventName(), ModifyEvent.EVENT_NAME);
@@ -86,8 +116,9 @@ public class PathEventListenerTest {
     }
 
     @Test
-    public void testOnPathDelete() {
-        assertTrue("Event bag is not empty at the beginning", listener.getEventBag().isEmpty());
+    public void testOnPathDelete()
+            throws InterruptedException {
+        assertTrue("Event bag is not empty at the beginning", eventListener.getEvents().isEmpty());
 
         Path file = FileUtil.createTestFile(ROOT_TEST_DIR);
         listener.onPathCreated(file);
@@ -95,19 +126,34 @@ public class PathEventListenerTest {
         Path fileDelete = FileUtil.deleteTestFile(ROOT_TEST_DIR);
         listener.onPathDeleted(fileDelete);
 
-        assertEquals("Event bag does not contain create and delete event", 2, listener.getEventBag().size());
+        // wait until our listener is notified
+        Thread.sleep(AGGREGATION_INTERVAL + 100L);
 
-        IEvent createEvent = listener.getEventBag().get(0);
+        assertEquals("Event bag does not contain create and delete event", 2, eventListener.getEvents().size());
+
+        IEvent createEvent = eventListener.getEvents().get(0);
 
         assertThat("Event is not instance of CreateEvent", createEvent, instanceOf(CreateEvent.class));
         assertEquals("CreateEvent does not contain the same path element", file, createEvent.getPath());
 
-        IEvent deleteEvent = listener.getEventBag().get(1);
+        IEvent deleteEvent = eventListener.getEvents().get(1);
 
         assertThat("Event is not instance of ModifyEvent", deleteEvent, instanceOf(DeleteEvent.class));
         assertEquals("Event name is not equals", deleteEvent.getEventName(), DeleteEvent.EVENT_NAME);
         assertEquals("DeleteEvent does not contain the same path element", file, deleteEvent.getPath());
         assertNotNull("Filename is null", deleteEvent.getName());
         assertNull("Hash is not null", deleteEvent.getHash());
+    }
+
+    @Test
+    public void testAccessors() {
+        assertEquals("listeners are not correctly registered", 1, listener.getListener().size());
+
+        IEventListener l = new PathChangeEventListener();
+        listener.addListener(l);
+        assertEquals("listeners are not correctly registered after adding", 2, listener.getListener().size());
+
+        listener.removeListener(l);
+        assertEquals("listeners are not correctly removed", 1, listener.getListener().size());
     }
 }

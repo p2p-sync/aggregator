@@ -1,8 +1,6 @@
 package org.rmatil.sync.event.aggregator.core;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import name.mitterdorfer.perlock.PathWatcher;
-import org.apache.log4j.spi.LoggerFactory;
 import org.rmatil.sync.event.aggregator.api.IEventAggregator;
 import org.rmatil.sync.event.aggregator.api.IEventListener;
 import org.rmatil.sync.event.aggregator.core.aggregator.IAggregator;
@@ -25,7 +23,7 @@ import java.util.concurrent.TimeUnit;
  * The event aggregator which aggregates multiple
  * file system events to one
  */
-public class EventAggregator implements Runnable, IEventAggregator {
+public class EventAggregator implements IEventListener, IEventAggregator {
 
     final static Logger logger = org.slf4j.LoggerFactory.getLogger(EventAggregator.class);
 
@@ -93,6 +91,8 @@ public class EventAggregator implements Runnable, IEventAggregator {
         this.rootPath = rootPath;
         this.aggregationInterval = DEFAULT_AGGREGATION_INTERVAL;
         this.pathEventListener = new PathEventListener();
+        // add this as listener to aggregate events
+        this.pathEventListener.addListener(this);
         this.eventListener = new ArrayList<>();
         this.aggregators = new ArrayList<>();
         this.modifiers = new ArrayList<>();
@@ -167,7 +167,8 @@ public class EventAggregator implements Runnable, IEventAggregator {
             e.printStackTrace();
         }
 
-        this.aggregationExecutorService.scheduleAtFixedRate(this, 0, this.aggregationInterval, TimeUnit.MILLISECONDS);
+        // schedule the pathEventListener to notify us if he has events on the fixed interval
+        this.aggregationExecutorService.scheduleAtFixedRate(this.pathEventListener, 0, this.aggregationInterval, TimeUnit.MILLISECONDS);
     }
 
     public void stop() {
@@ -179,56 +180,32 @@ public class EventAggregator implements Runnable, IEventAggregator {
         this.aggregationExecutorService.shutdown();
     }
 
-    public void run() {
-        try {
-            // we need to copy these events, otherwise we clear them right after the
-            // reference is copied
-            List<IEvent> aggregatedEvents = new ArrayList<>();
-            for (IEvent event : this.pathEventListener.getEventBag()) {
-                switch (event.getEventName()) {
-                    case CreateEvent.EVENT_NAME:
-                        aggregatedEvents.add(new CreateEvent((CreateEvent) event));
-                        break;
-                    case ModifyEvent.EVENT_NAME:
-                        aggregatedEvents.add(new ModifyEvent((ModifyEvent) event));
-                        break;
-                    case DeleteEvent.EVENT_NAME:
-                        aggregatedEvents.add(new DeleteEvent((DeleteEvent) event));
-                        break;
-                    case MoveEvent.EVENT_NAME:
-                        aggregatedEvents.add(new MoveEvent((MoveEvent) event));
-                }
-            }
+    public void onChange(List<IEvent> events) {
+        // sort events according to their timestamp
+        Collections.sort(events);
 
-            this.pathEventListener.clearEvents();
-
-            // sort events according to their timestamp
-            Collections.sort(aggregatedEvents);
-
-            logger.trace("Got " + aggregatedEvents.size() + " events before modifying");
-            for (IModifier modifier : modifiers) {
-                aggregatedEvents = modifier.modify(aggregatedEvents);
-                logger.trace("Got " + aggregatedEvents.size() + " events after modifying with " + modifier.getClass().getName());
-            }
-
-            logger.trace("Got " + aggregatedEvents.size() + " before aggregating");
-            for (IAggregator aggregator : aggregators) {
-                aggregatedEvents = aggregator.aggregate(aggregatedEvents);
-                logger.trace("Got " + aggregatedEvents.size() + " after aggregating with " + aggregator.getClass().getName());
-            }
-
-            logger.trace("Got " + aggregatedEvents.size() + " before notifying listeners");
-            // do not notify about empty events
-            if (aggregatedEvents.isEmpty()) {
-                return;
-            }
-
-            // notify all event listeners for the made changes
-            for (IEventListener listener : this.eventListener) {
-                listener.onChange(aggregatedEvents);
-            }
-        } catch (Exception e) {
-            logger.error("Caught exception while running EventAggregator. Message: " + e.getMessage());
+        logger.trace("Got " + events.size() + " events before modifying");
+        for (IModifier modifier : modifiers) {
+            events = modifier.modify(events);
+            logger.trace("Got " + events.size() + " events after modifying with " + modifier.getClass().getName());
         }
+
+        logger.trace("Got " + events.size() + " before aggregating");
+        for (IAggregator aggregator : aggregators) {
+            events = aggregator.aggregate(events);
+            logger.trace("Got " + events.size() + " after aggregating with " + aggregator.getClass().getName());
+        }
+
+        logger.trace("Got " + events.size() + " before notifying listeners");
+        // do not notify about empty events
+        if (events.isEmpty()) {
+            return;
+        }
+
+        // notify all event listeners for the made changes
+        for (IEventListener listener : this.eventListener) {
+            listener.onChange(events);
+        }
+
     }
 }

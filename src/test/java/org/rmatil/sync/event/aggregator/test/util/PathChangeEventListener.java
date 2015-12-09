@@ -21,7 +21,7 @@ public class PathChangeEventListener implements IEventListener {
     protected List<IEvent> events;
 
     public PathChangeEventListener() {
-        this.events = new ArrayList<IEvent>();
+        this.events = new ArrayList<>();
     }
 
     public void onChange(List<IEvent> changes) {
