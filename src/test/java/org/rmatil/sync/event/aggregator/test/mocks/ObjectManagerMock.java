@@ -29,6 +29,13 @@ public class ObjectManagerMock implements IObjectManager {
     }
 
     @Override
+    public void clear()
+            throws InputOutputException {
+        this.pathObjects = new HashMap<>();
+        this.index = new Index(new HashMap<>());
+    }
+
+    @Override
     public void writeObject(PathObject path)
             throws InputOutputException {
         this.pathObjects.put(Hash.hash(Config.DEFAULT.getHashingAlgorithm(), path.getAbsolutePath()), path);
