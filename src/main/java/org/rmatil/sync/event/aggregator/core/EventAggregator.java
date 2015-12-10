@@ -153,16 +153,18 @@ public class EventAggregator implements IEventListener, IEventAggregator {
     public void start()
             throws IOException {
         try {
-            this.pathWatcher.start();
+            if (! this.pathWatcher.isRunning()) {
+                this.pathWatcher.start();
+            }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Could not start path watcher. Message: " + e.getMessage());
         }
 
         try {
             // as starting/stop happens in the background (in a new thread) we might miss events. Wait a bit...
             Thread.sleep(TIME_GAP_LIFE_CYCLE);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            logger.error("Could not wait for path watcher to start. Message: " + e.getMessage());
         }
 
         // schedule the pathEventListener to notify us if he has events on the fixed interval
