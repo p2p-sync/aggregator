@@ -136,7 +136,7 @@ public class HistoryMoveAggregator implements IAggregator {
                     IEvent createHit = createHits.get(0);
 
                     // check timestamps: which was first?
-                    if (deleteHit.getTimestamp() < createHit.getTimestamp()) {
+                    if (deleteHit.getTimestamp() <= createHit.getTimestamp()) {
                         MoveEvent moveEvent = new MoveEvent(deleteHit.getPath(), createHit.getPath(), createHit.getName(), createHit.getHash(), createHit.getTimestamp());
                         aggregatedEvents.add(moveEvent);
                         logger.trace("Creating moveEvent from " + deleteHit.getPath() + " to " + createHit.getPath());
