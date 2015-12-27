@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.rmatil.sync.event.aggregator</groupId>
-    <artifactId>sync-event-aggregator</artifactId>
+    <groupId>org.rmatil.sync</groupId>
+    <artifactId>sync</artifactId>
     <version>0.1-SNAPSHOT</version>
 
     <repositories>
@@ -18,8 +18,8 @@
             </snapshots>
         </repository>
         <repository>
-            <id>version-mvn-repo</id>
-            <url>https://raw.github.com/p2p-sync/versions/mvn-repo/</url>
+            <id>aggregator-mvn-repo</id>
+            <url>https://raw.github.com/p2p-sync/aggregator/mvn-repo/</url>
             <snapshots>
                 <enabled>true</enabled>
                 <updatePolicy>always</updatePolicy>
@@ -139,34 +139,19 @@
             <version>0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>org.rmatil.sync.version</groupId>
-            <artifactId>sync-version</artifactId>
+            <groupId>org.rmatil.sync.event.aggregator</groupId>
+            <artifactId>sync-event-aggregator</artifactId>
             <version>0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>name.mitterdorfer.perlock</groupId>
-            <artifactId>perlock-core</artifactId>
-            <version>0.3.0</version>
+            <groupId>org.rmatil.sync.locations</groupId>
+            <artifactId>sync-locations</artifactId>
+            <version>0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>18.0</version>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-        </dependency>
-        <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-all</artifactId>
-            <version>1.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.5</version>
+            <groupId>org.rmatil.sync.network</groupId>
+            <artifactId>sync-network</artifactId>
+            <version>0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
