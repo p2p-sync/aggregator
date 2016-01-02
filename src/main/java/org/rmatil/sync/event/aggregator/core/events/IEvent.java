@@ -1,12 +1,13 @@
 package org.rmatil.sync.event.aggregator.core.events;
 
+import java.io.Serializable;
 import java.nio.file.Path;
 
 /**
  * An interface specifying an event which is
  * fired when the file tree has changed
  */
-public interface IEvent extends Comparable<IEvent> {
+public interface IEvent extends Comparable<IEvent>, Serializable {
 
     /**
      * The path element which has changed
