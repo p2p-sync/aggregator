@@ -108,7 +108,7 @@ public class PathEventListener implements PathChangeListener, Runnable {
                 listener.onChange(aggregatedEvents);
             }
         } catch (Exception e) {
-            logger.error("Thread error. Message: " + e.getMessage());
+            logger.error("Thread error. Message: " + e.getMessage(), e);
         }
     }
 
