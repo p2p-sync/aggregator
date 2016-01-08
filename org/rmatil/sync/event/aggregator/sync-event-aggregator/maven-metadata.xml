@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <metadata>
-  <groupId>org.rmatil.sync</groupId>
-  <artifactId>sync</artifactId>
+  <groupId>org.rmatil.sync.event.aggregator</groupId>
+  <artifactId>sync-event-aggregator</artifactId>
   <versioning>
     <versions>
       <version>0.1-SNAPSHOT</version>
     </versions>
-    <lastUpdated>20160103154739</lastUpdated>
+    <lastUpdated>20160108104015</lastUpdated>
   </versioning>
 </metadata>
