@@ -78,17 +78,37 @@ public class AddDirectoryContentModifier implements IModifier {
             if (file.isFile()) {
                 try {
                     logger.trace("Create createEvent for subfile " + file.toPath().toString() + " in parentDir " + parentDirectory.toString());
-                    events.add(new CreateEvent(this.rootDir.relativize(file.toPath()), file.getName(), Hash.hash(Config.DEFAULT.getHashingAlgorithm(), file), timestamp));
+                    // add additional n milliseconds such that the child contents are processed later than the parent ones
+                    events.add(new CreateEvent(this.rootDir.relativize(file.toPath()), file.getName(), Hash.hash(Config.DEFAULT.getHashingAlgorithm(), file), timestamp + this.getAdditionalMilliseconds(parentDirectory.toString(), file.toString())));
                 } catch (IOException e) {
                     logger.error("Could not hash contents of file " + file.toPath().toString());
                 }
             } else if (file.isDirectory()) {
                 // create createEvent for subdir
-                events.add(new CreateEvent(this.rootDir.relativize(file.toPath()), file.getName(), null, timestamp));
+                // add additional n milliseconds such that the child contents are processed later than the parent ones
+                events.add(new CreateEvent(this.rootDir.relativize(file.toPath()), file.getName(), null, timestamp + this.getAdditionalMilliseconds(parentDirectory.toString(), file.toString())));
                 events.addAll(this.createCreateEventForChildren(file, timestamp));
             }
         }
 
         return events;
+    }
+
+    /**
+     * Returns the number of additional milliseconds to add for a child path relative to the event path
+     * so that while traversing directories, their child entries are processed later than the parent.
+     * All elements on the same level get the same number of additional milliseconds
+     *
+     * @param eventPath The path of the event
+     * @param childPath The path to the child
+     *
+     * @return The number of additional milliseconds to add
+     */
+    protected int getAdditionalMilliseconds(String eventPath, String childPath) {
+        int nrOfSlashes = eventPath.length() - eventPath.replace("/", "").length();
+        int nrOfSlashesInChild = childPath.length() - childPath.replace("/", "").length();
+
+        // we add for each level one millisecond
+        return Math.abs(nrOfSlashesInChild - nrOfSlashes);
     }
 }
