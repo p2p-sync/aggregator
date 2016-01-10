@@ -87,7 +87,7 @@ public class AddDirectoryContentModifier implements IModifier {
                 // create createEvent for subdir
                 // add additional n milliseconds such that the child contents are processed later than the parent ones
                 events.add(new CreateEvent(this.rootDir.relativize(file.toPath()), file.getName(), null, timestamp + this.getAdditionalMilliseconds(parentDirectory.toString(), file.toString())));
-                events.addAll(this.createCreateEventForChildren(file, timestamp));
+                events.addAll(this.createCreateEventForChildren(file, timestamp + this.getAdditionalMilliseconds(parentDirectory.toString(), file.toString())));
             }
         }
 
