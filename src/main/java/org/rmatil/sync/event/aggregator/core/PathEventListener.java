@@ -44,7 +44,7 @@ public class PathEventListener implements PathChangeListener, Runnable {
 
         String hash = null;
         try {
-            if (path.toFile().isFile()) {
+            if (path.toFile().isFile() || path.toFile().isDirectory()) {
                 hash = Hash.hash(Config.getDefaultConfiguration().getHashingAlgorithm(), path.toFile());
             }
         } catch (IOException e) {
@@ -59,7 +59,7 @@ public class PathEventListener implements PathChangeListener, Runnable {
 
         String hash = null;
         try {
-            if (path.toFile().isFile()) {
+            if (path.toFile().isFile() || path.toFile().isDirectory()) {
                 hash = Hash.hash(Config.getDefaultConfiguration().getHashingAlgorithm(), path.toFile());
             }
         } catch (IOException e) {

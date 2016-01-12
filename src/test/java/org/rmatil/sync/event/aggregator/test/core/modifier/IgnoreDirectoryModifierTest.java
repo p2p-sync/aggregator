@@ -25,10 +25,12 @@ public class IgnoreDirectoryModifierTest {
 
     protected static IgnoreDirectoryModifier modifier;
 
+    protected static Path ROOT_DIR = Config.DEFAULT.getRootTestDir();
+
     @BeforeClass
     public static void setUp() {
         APathTest.setUp();
-        modifier = new IgnoreDirectoryModifier();
+        modifier = new IgnoreDirectoryModifier(ROOT_DIR);
     }
 
     @AfterClass
@@ -47,12 +49,12 @@ public class IgnoreDirectoryModifierTest {
             e.printStackTrace();
         }
 
-        IEvent ev1 = new CreateEvent(testFile, testFile.getFileName().toString(), "someHash", System.currentTimeMillis());
-        IEvent ev2 = new CreateEvent(testDir, testDir.getFileName().toString(), null, System.currentTimeMillis());
+        IEvent ev1 = new CreateEvent(ROOT_DIR.relativize(testFile), testFile.getFileName().toString(), "someHash", System.currentTimeMillis());
+        IEvent ev2 = new CreateEvent(ROOT_DIR.relativize(testDir), testDir.getFileName().toString(), null, System.currentTimeMillis());
 
         // modify event
-        IEvent ev3 = new ModifyEvent(testDir, testDir.getFileName().toString(), null, System.currentTimeMillis());
-        IEvent ev4 = new ModifyEvent(testFile, testFile.getFileName().toString(), "someHash2", System.currentTimeMillis());
+        IEvent ev3 = new ModifyEvent(ROOT_DIR.relativize(testDir), testDir.getFileName().toString(), null, System.currentTimeMillis());
+        IEvent ev4 = new ModifyEvent(ROOT_DIR.relativize(testFile), testFile.getFileName().toString(), "someHash2", System.currentTimeMillis());
 
         List<IEvent> events = new ArrayList<>();
         events.add(ev1);
