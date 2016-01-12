@@ -12,6 +12,7 @@ import org.rmatil.sync.version.core.model.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -55,7 +56,7 @@ public class HistoryMoveAggregator implements IAggregator {
     public List<IEvent> aggregate(List<IEvent> events) {
         Collections.sort(events);
 
-        Map<String, List<IEvent>> sameHashEvents = new HashMap<String, List<IEvent>>();
+        Map<String, List<IEvent>> sameHashFileEvents = new HashMap<>();
 
         // add all events with the same file hash to the same place
         for (IEvent event : events) {
@@ -67,7 +68,7 @@ public class HistoryMoveAggregator implements IAggregator {
                     PathObject object = this.objectManager.getObject(Hash.hash(Config.DEFAULT.getHashingAlgorithm(), event.getPath().toString()));
                     if (null != object && object.getVersions().size() > 0) {
                         Version lastVersion = object.getVersions().get(object.getVersions().size() - 1);
-                        logger.trace("Create delete event for path " + event.getPath().toString());
+                        logger.trace("Updating delete event with hash for path " + event.getPath().toString());
                         event = new DeleteEvent(
                                 event.getPath(),
                                 event.getName(),
@@ -81,24 +82,24 @@ public class HistoryMoveAggregator implements IAggregator {
             }
 
             if (null == event.getHash()) {
-                if (null == sameHashEvents.get("__empty_key")) {
-                    sameHashEvents.put("__empty_key", new ArrayList<>());
+                if (null == sameHashFileEvents.get("__empty_key")) {
+                    sameHashFileEvents.put("__empty_key", new ArrayList<>());
                 }
 
-                sameHashEvents.get("__empty_key").add(event);
+                sameHashFileEvents.get("__empty_key").add(event);
             } else {
-                if (null == sameHashEvents.get(event.getHash())) {
-                    sameHashEvents.put(event.getHash(), new ArrayList<>());
+                if (null == sameHashFileEvents.get(event.getHash())) {
+                    sameHashFileEvents.put(event.getHash(), new ArrayList<>());
                 }
 
-                sameHashEvents.get(event.getHash()).add(event);
+                sameHashFileEvents.get(event.getHash()).add(event);
             }
         }
 
         // the final aggregated events which we will return
         List<IEvent> aggregatedEvents = new ArrayList<>();
 
-        for (Map.Entry<String, List<IEvent>> entry : sameHashEvents.entrySet()) {
+        for (Map.Entry<String, List<IEvent>> entry : sameHashFileEvents.entrySet()) {
             if (entry.getValue().size() < 2) {
                 // only one event for the same hash
                 // -> no event aggregation
@@ -114,8 +115,32 @@ public class HistoryMoveAggregator implements IAggregator {
                 List<IEvent> createHits = Lists.getInstances(entry.getValue(), CreateEvent.class);
 
                 if (! deleteHits.isEmpty() && ! createHits.isEmpty()) {
-                    // if the same file is multiple times deleted, we can not assign the
-                    // correct create event to it
+                    // if the same file is multiple times deleted, we try
+                    // to assign a move event for the same filename
+
+                    if (deleteHits.size() > 1 && deleteHits.size() == createHits.size()) {
+                        logger.info("Trying to arbitrary move event");
+
+                        // TODO: if the have the same filename, we do not care where to move them
+                        for (IEvent deleteEvent : deleteHits) {
+                            Path fileName = deleteEvent.getPath().getFileName();
+
+                            // look in the create events for the corresponding file name
+                            for (IEvent createEvent :  createHits) {
+                                if (createEvent.getPath().getFileName().equals(fileName) && deleteEvent.getTimestamp() <= createEvent.getTimestamp()) {
+                                    // we found a hit with the same filename
+                                    MoveEvent moveEvent = new MoveEvent(deleteEvent.getPath(), createEvent.getPath(), createEvent.getName(), createEvent.getHash(), createEvent.getTimestamp());
+                                    aggregatedEvents.add(moveEvent);
+                                    logger.trace("Creating moveEvent from " + deleteEvent.getPath() + " to " + createEvent.getPath());
+
+                                    break;
+                                }
+                            }
+                        }
+
+                        continue;
+                    }
+
                     if (deleteHits.size() > 1) {
                         logger.info("Delete hits for file with the same hash is bigger than one. Skipping these events...");
                         aggregatedEvents.addAll(deleteHits);
