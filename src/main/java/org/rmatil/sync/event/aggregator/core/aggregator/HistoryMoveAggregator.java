@@ -68,7 +68,7 @@ public class HistoryMoveAggregator implements IAggregator {
                     PathObject object = this.objectManager.getObject(Hash.hash(Config.DEFAULT.getHashingAlgorithm(), event.getPath().toString()));
                     if (null != object && object.getVersions().size() > 0) {
                         Version lastVersion = object.getVersions().get(object.getVersions().size() - 1);
-                        logger.trace("Updating delete event with hash for path " + event.getPath().toString());
+                        logger.trace("Updating delete event with hash for path " + event.getPath().toString() + ". Hash is " + lastVersion.getHash());
                         event = new DeleteEvent(
                                 event.getPath(),
                                 event.getName(),
@@ -126,12 +126,16 @@ public class HistoryMoveAggregator implements IAggregator {
                             Path fileName = deleteEvent.getPath().getFileName();
 
                             // look in the create events for the corresponding file name
-                            for (IEvent createEvent :  createHits) {
+                            for (Iterator<IEvent> iterator = createHits.iterator(); iterator.hasNext();) {
+                                IEvent createEvent = iterator.next();
                                 if (createEvent.getPath().getFileName().equals(fileName) && deleteEvent.getTimestamp() <= createEvent.getTimestamp()) {
                                     // we found a hit with the same filename
                                     MoveEvent moveEvent = new MoveEvent(deleteEvent.getPath(), createEvent.getPath(), createEvent.getName(), createEvent.getHash(), createEvent.getTimestamp());
                                     aggregatedEvents.add(moveEvent);
                                     logger.trace("Creating moveEvent from " + deleteEvent.getPath() + " to " + createEvent.getPath());
+
+                                    // finally remove the used event to avoid creating a move to the same file again
+                                    iterator.remove();
 
                                     break;
                                 }
