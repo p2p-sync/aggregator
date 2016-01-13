@@ -27,7 +27,7 @@ public class PathEventListener implements PathChangeListener, Runnable {
     /**
      * The list of events
      */
-    protected List<IEvent> eventBag;
+    protected final List<IEvent> eventBag;
 
     /**
      * List of event listeners which are notified on changes
@@ -42,64 +42,83 @@ public class PathEventListener implements PathChangeListener, Runnable {
     public void onPathCreated(Path path) {
         logger.trace("Got notified about the creation of '" + path + "'");
 
-        String hash = null;
-        try {
-            if (path.toFile().isFile() || path.toFile().isDirectory()) {
-                hash = Hash.hash(Config.getDefaultConfiguration().getHashingAlgorithm(), path.toFile());
-            }
-        } catch (IOException e) {
-            logger.error("Could not hash on path creation: " + e.getMessage());
-        }
+		// only synchronize access to the event bag (and not he whole object by using
+		// synchronized on the method) to ensure, that the path listener which notifies us here
+		// is able to access this object
+        synchronized (this.eventBag) {
 
-        this.eventBag.add(new CreateEvent(path, path.toFile().getName(), hash, System.currentTimeMillis()));
+            String hash = null;
+            try {
+                if (path.toFile().isFile() || path.toFile().isDirectory()) {
+                    hash = Hash.hash(Config.getDefaultConfiguration().getHashingAlgorithm(), path.toFile());
+                }
+            } catch (IOException e) {
+                logger.error("Could not hash on path creation: " + e.getMessage());
+            }
+
+            this.eventBag.add(new CreateEvent(path, path.toFile().getName(), hash, System.currentTimeMillis()));
+        }
     }
 
     public void onPathModified(Path path) {
         logger.trace("Got notified about the modifying of '" + path + "'");
 
-        String hash = null;
-        try {
-            if (path.toFile().isFile() || path.toFile().isDirectory()) {
-                hash = Hash.hash(Config.getDefaultConfiguration().getHashingAlgorithm(), path.toFile());
-            }
-        } catch (IOException e) {
-            logger.error("Could not hash on path modification: " + e.getMessage());
-        }
+		// only synchronize access to the event bag (and not he whole object by using
+		// synchronized on the method) to ensure, that the path listener which notifies us here
+		// is able to access this object
+        synchronized (this.eventBag) {
 
-        this.eventBag.add(new ModifyEvent(path, path.toFile().getName(), hash, System.currentTimeMillis()));
+            String hash = null;
+            try {
+                if (path.toFile().isFile() || path.toFile().isDirectory()) {
+                    hash = Hash.hash(Config.getDefaultConfiguration().getHashingAlgorithm(), path.toFile());
+                }
+            } catch (IOException e) {
+                logger.error("Could not hash on path modification: " + e.getMessage());
+            }
+
+            this.eventBag.add(new ModifyEvent(path, path.toFile().getName(), hash, System.currentTimeMillis()));
+        }
     }
 
     public void onPathDeleted(Path path) {
         logger.trace("Got notified about the deletion of '" + path + "'");
 
-        this.eventBag.add(new DeleteEvent(path, path.toFile().getName(), null, System.currentTimeMillis()));
+        synchronized (this.eventBag) {
+            this.eventBag.add(new DeleteEvent(path, path.toFile().getName(), null, System.currentTimeMillis()));
+        }
     }
 
     @Override
     public void run() {
         try {
-            if (this.eventBag.size() < 1) {
-                return;
-            }
-
             List<IEvent> aggregatedEvents = new ArrayList<>();
-            for (IEvent event : this.eventBag) {
-                switch (event.getEventName()) {
-                    case CreateEvent.EVENT_NAME:
-                        aggregatedEvents.add(new CreateEvent((CreateEvent) event));
-                        break;
-                    case ModifyEvent.EVENT_NAME:
-                        aggregatedEvents.add(new ModifyEvent((ModifyEvent) event));
-                        break;
-                    case DeleteEvent.EVENT_NAME:
-                        aggregatedEvents.add(new DeleteEvent((DeleteEvent) event));
-                        break;
-                    case MoveEvent.EVENT_NAME:
-                        aggregatedEvents.add(new MoveEvent((MoveEvent) event));
-                }
-            }
 
-            this.eventBag.clear();
+			// avoid concurrent modification exceptions while accessing the event bag
+            synchronized (this.eventBag) {
+
+                if (this.eventBag.size() < 1) {
+                    return;
+                }
+
+                for (IEvent event : this.eventBag) {
+                    switch (event.getEventName()) {
+                        case CreateEvent.EVENT_NAME:
+                            aggregatedEvents.add(new CreateEvent((CreateEvent) event));
+                            break;
+                        case ModifyEvent.EVENT_NAME:
+                            aggregatedEvents.add(new ModifyEvent((ModifyEvent) event));
+                            break;
+                        case DeleteEvent.EVENT_NAME:
+                            aggregatedEvents.add(new DeleteEvent((DeleteEvent) event));
+                            break;
+                        case MoveEvent.EVENT_NAME:
+                            aggregatedEvents.add(new MoveEvent((MoveEvent) event));
+                    }
+                }
+
+                this.eventBag.clear();
+            }
 
             Collections.sort(aggregatedEvents);
 
@@ -107,6 +126,7 @@ public class PathEventListener implements PathChangeListener, Runnable {
             for (IEventListener listener : this.eventListeners) {
                 listener.onChange(aggregatedEvents);
             }
+
         } catch (Exception e) {
             logger.error("Thread error. Message: " + e.getMessage(), e);
         }
