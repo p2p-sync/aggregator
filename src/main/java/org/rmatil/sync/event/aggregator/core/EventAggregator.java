@@ -178,7 +178,10 @@ public class EventAggregator implements IEventListener, IEventAggregator {
         }
 
         this.pathWatcherExecutorService.shutdown();
-        this.aggregationExecutorService.shutdown();
+
+		if (null != this.aggregationExecutorService) {
+			this.aggregationExecutorService.shutdown();
+		}
     }
 
     public void onChange(List<IEvent> events) {
