@@ -144,7 +144,7 @@ public class HistoryMoveAggregatorTest {
 
     @Test
     public void testSingleEvent() {
-        List<IEvent> singleEvent = new ArrayList<IEvent>();
+        List<IEvent> singleEvent = new ArrayList<>();
         IEvent event = new DeleteEvent(oldPath, fileName, fileHash, secondTimestamp);
         singleEvent.add(event);
 
@@ -229,8 +229,10 @@ public class HistoryMoveAggregatorTest {
 
         PathObject testOldPath = new PathObject(
                 fileName,
+                null,
                 Naming.getPathWithoutFileName(fileName, oldPath.toString()),
                 PathType.FILE,
+                false,
                 false,
                 new ArrayList<>(),
                 versions

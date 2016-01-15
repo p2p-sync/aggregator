@@ -24,7 +24,7 @@ public class ObjectManagerMock implements IObjectManager {
     Map<String, PathObject> pathObjects;
 
     public ObjectManagerMock() {
-        this.index = new Index(new HashMap<>());
+        this.index = new Index(new HashMap<>(), new HashMap<>());
         this.pathObjects = new HashMap<>();
     }
 
@@ -32,7 +32,7 @@ public class ObjectManagerMock implements IObjectManager {
     public void clear()
             throws InputOutputException {
         this.pathObjects = new HashMap<>();
-        this.index = new Index(new HashMap<>());
+        this.index = new Index(new HashMap<>(), new HashMap<>());
     }
 
     @Override

@@ -1,7 +1,6 @@
 package org.rmatil.sync.event.aggregator.core.aggregator;
 
 import org.rmatil.sync.commons.hashing.Hash;
-import org.rmatil.sync.commons.hashing.HashingAlgorithm;
 import org.rmatil.sync.commons.list.Lists;
 import org.rmatil.sync.event.aggregator.config.Config;
 import org.rmatil.sync.event.aggregator.core.events.*;
@@ -17,7 +16,7 @@ import java.util.*;
 
 /**
  * Aggregates a delete and add event of the same hash to a MoveEvent.
- *
+ * <p>
  * Since the filesystem notifies at the moment of the deletion, no
  * hash of the deleted file can be created anymore. Therefore, this
  * aggregator contacts the object manager for the hash of the last
@@ -121,12 +120,11 @@ public class HistoryMoveAggregator implements IAggregator {
                     if (deleteHits.size() > 1 && deleteHits.size() == createHits.size()) {
                         logger.info("Trying to arbitrary move event");
 
-                        // TODO: if the have the same filename, we do not care where to move them
                         for (IEvent deleteEvent : deleteHits) {
                             Path fileName = deleteEvent.getPath().getFileName();
 
                             // look in the create events for the corresponding file name
-                            for (Iterator<IEvent> iterator = createHits.iterator(); iterator.hasNext();) {
+                            for (Iterator<IEvent> iterator = createHits.iterator(); iterator.hasNext(); ) {
                                 IEvent createEvent = iterator.next();
                                 if (createEvent.getPath().getFileName().equals(fileName) && deleteEvent.getTimestamp() <= createEvent.getTimestamp()) {
                                     // we found a hit with the same filename
