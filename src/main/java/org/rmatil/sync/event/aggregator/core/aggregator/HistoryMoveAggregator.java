@@ -28,9 +28,9 @@ public class HistoryMoveAggregator implements IAggregator {
 
 	/**
 	 * The tolerance between two events up to which they
-	 * are aggregated
+	 * are tried to be aggregated (in milliseconds)
 	 */
-	public static final int EVENT_TIMESTAMP_TOLERANCE = 10;
+	public static final int EVENT_TIMESTAMP_TOLERANCE = 1000;
 
     final static Logger logger = LoggerFactory.getLogger(HistoryMoveAggregator.class);
 
