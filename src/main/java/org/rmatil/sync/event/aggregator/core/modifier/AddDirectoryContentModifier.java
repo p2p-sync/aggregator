@@ -47,7 +47,7 @@ public class AddDirectoryContentModifier implements IModifier {
                     modifiedEvents.addAll(
                             deletedChildren
                                     .stream()
-                                    .map(entry -> new DeleteEvent(Paths.get(entry.getAbsolutePath()), entry.getName(), null, event.getTimestamp() - this.getAdditionalMilliseconds(event.getPath().toString(), entry.getAbsolutePath())))
+                                    .map(entry -> new DeleteEvent(Paths.get(entry.getAbsolutePath()), entry.getName(), null, event.getTimestamp() - Math.abs(this.getAdditionalMilliseconds(event.getPath().toString(), entry.getAbsolutePath()))))
                                     .collect(Collectors.toList()));
                 } catch (InputOutputException e) {
                     logger.error("Failed to get deleted objects from directory " + event.getPath().toString() + ". Message: " + e.getMessage());
@@ -78,14 +78,14 @@ public class AddDirectoryContentModifier implements IModifier {
             try {
                 logger.trace("Create createEvent for subfile " + file.toPath().toString() + " in parentDir " + parentDirectory.toString());
                 // add additional n milliseconds such that the child contents are processed later than the parent ones
-                events.add(new CreateEvent(this.rootDir.relativize(file.toPath()), file.getName(), Hash.hash(Config.DEFAULT.getHashingAlgorithm(), file), timestamp + this.getAdditionalMilliseconds(parentDirectory.toString(), file.toString())));
+                events.add(new CreateEvent(this.rootDir.relativize(file.toPath()), file.getName(), Hash.hash(Config.DEFAULT.getHashingAlgorithm(), file), timestamp + Math.abs(this.getAdditionalMilliseconds(parentDirectory.toString(), file.toString()))));
             } catch (IOException e) {
                 logger.error("Could not hash contents of file " + file.toPath().toString());
             }
 
             if (file.isDirectory()) {
                 // add additional n milliseconds such that the child contents are processed later than the parent ones
-                events.addAll(this.createCreateEventForChildren(file, timestamp + this.getAdditionalMilliseconds(parentDirectory.toString(), file.toString())));
+                events.addAll(this.createCreateEventForChildren(file, timestamp + Math.abs(this.getAdditionalMilliseconds(parentDirectory.toString(), file.toString()))));
             }
         }
 
