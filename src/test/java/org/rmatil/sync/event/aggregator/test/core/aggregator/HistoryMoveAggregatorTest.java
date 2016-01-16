@@ -60,14 +60,8 @@ public class HistoryMoveAggregatorTest {
         forceNoMoveEventList = new ArrayList<>();
 
         firstTimestamp = System.currentTimeMillis();
-
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        secondTimestamp = System.currentTimeMillis();
+        // this must be greater than HistoryMoveAggregator#EVENT_TIMESTAMP_TOLERANCE
+        secondTimestamp = firstTimestamp + 1100;
 
         DeleteEvent deleteEvent = new DeleteEvent(oldPath, fileName, fileHash, firstTimestamp);
         CreateEvent createEvent = new CreateEvent(newPath, fileName, fileHash, secondTimestamp);
