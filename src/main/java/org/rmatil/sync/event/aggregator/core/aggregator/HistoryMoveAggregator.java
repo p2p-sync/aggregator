@@ -26,6 +26,12 @@ import java.util.*;
  */
 public class HistoryMoveAggregator implements IAggregator {
 
+	/**
+	 * The tolerance between two events up to which they
+	 * are aggregated
+	 */
+	public static final int EVENT_TIMESTAMP_TOLERANCE = 10;
+
     final static Logger logger = LoggerFactory.getLogger(HistoryMoveAggregator.class);
 
     /**
@@ -163,7 +169,7 @@ public class HistoryMoveAggregator implements IAggregator {
                     IEvent createHit = createHits.get(0);
 
                     // check timestamps: which was first?
-                    if (deleteHit.getTimestamp() <= createHit.getTimestamp()) {
+                    if (deleteHit.getTimestamp() <= createHit.getTimestamp() || Math.abs(deleteHit.getTimestamp() - createHit.getTimestamp()) <= EVENT_TIMESTAMP_TOLERANCE) {
                         MoveEvent moveEvent = new MoveEvent(deleteHit.getPath(), createHit.getPath(), createHit.getName(), createHit.getHash(), createHit.getTimestamp());
                         aggregatedEvents.add(moveEvent);
                         logger.trace("Creating moveEvent from " + deleteHit.getPath() + " to " + createHit.getPath());
