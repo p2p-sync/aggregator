@@ -48,6 +48,12 @@ public class ObjectManagerMock implements IObjectManager {
     }
 
     @Override
+    public PathObject getObjectForPath(String s)
+            throws InputOutputException {
+        throw new RuntimeException("Not implemented");
+    }
+
+    @Override
     public void removeObject(String fileNameHash)
             throws InputOutputException {
         this.pathObjects.remove(fileNameHash);
