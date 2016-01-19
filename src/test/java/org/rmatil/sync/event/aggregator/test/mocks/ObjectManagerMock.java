@@ -2,6 +2,8 @@ package org.rmatil.sync.event.aggregator.test.mocks;
 
 import org.rmatil.sync.commons.hashing.Hash;
 import org.rmatil.sync.event.aggregator.config.Config;
+import org.rmatil.sync.persistence.api.IPathElement;
+import org.rmatil.sync.persistence.api.IStorageAdapter;
 import org.rmatil.sync.persistence.exceptions.InputOutputException;
 import org.rmatil.sync.version.api.IObjectManager;
 import org.rmatil.sync.version.core.model.Index;
@@ -70,6 +72,16 @@ public class ObjectManagerMock implements IObjectManager {
         }
 
         return pathObjects;
+    }
+
+    @Override
+    public IPathElement getObjectDir() {
+        throw new RuntimeException("Not implemented");
+    }
+
+    @Override
+    public IStorageAdapter getStorageAdapater() {
+        throw new RuntimeException("Not implemented");
     }
 
     @Override
