@@ -65,8 +65,6 @@ public class EventAggregatorTest {
         eventAggregator.addAggregator(moveAggregator);
         eventAggregator.addListener(eventListener);
         eventAggregator.addModifier(new RelativePathModifier(Config.DEFAULT.getRootTestDir()));
-
-        pathWatcher = (PathWatcherMock) mockPathWatcherFactory.getPathWatcherInstance();
     }
 
     @AfterClass
@@ -80,6 +78,8 @@ public class EventAggregatorTest {
         FileUtil.deleteTestFile(ROOT_TEST_DIR);
         logger.debug("Starting event aggregator");
         eventAggregator.start();
+        pathWatcher = (PathWatcherMock) mockPathWatcherFactory.getPathWatcherInstance();
+
     }
 
     @After

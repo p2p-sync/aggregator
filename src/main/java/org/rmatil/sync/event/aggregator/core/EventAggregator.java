@@ -82,6 +82,8 @@ public class EventAggregator implements IEventListener, IEventAggregator {
      */
     protected long aggregationInterval;
 
+    protected IPathWatcherFactory pathWatcherFactory;
+
     /**
      * The root path element which is being watched
      *
@@ -91,19 +93,12 @@ public class EventAggregator implements IEventListener, IEventAggregator {
         this.rootPath = rootPath;
         this.aggregationInterval = DEFAULT_AGGREGATION_INTERVAL;
         this.pathEventListener = new PathEventListener();
+        this.pathWatcherFactory = pathWatcherFactory;
         // add this as listener to aggregate events
         this.pathEventListener.addListener(this);
         this.eventListener = new ArrayList<>();
         this.aggregators = new ArrayList<>();
         this.modifiers = new ArrayList<>();
-
-        this.pathWatcherExecutorService = Executors.newFixedThreadPool(EventAggregator.NUMBER_OF_PATHS_TO_WATCH);
-
-        if (CREATE_RECURSIVE_WATCHER) {
-            this.pathWatcher = pathWatcherFactory.createRecursiveWatcher(pathWatcherExecutorService, this.rootPath, this.pathEventListener);
-        } else {
-            this.pathWatcher = pathWatcherFactory.createNonRecursiveWatcher(pathWatcherExecutorService, this.rootPath, this.pathEventListener);
-        }
     }
 
     public void addListener(IEventListener eventListener) {
@@ -152,9 +147,20 @@ public class EventAggregator implements IEventListener, IEventAggregator {
 
     public void start()
             throws IOException {
+        logger.trace("Starting EventAggregator...");
+        this.pathWatcherExecutorService = Executors.newFixedThreadPool(EventAggregator.NUMBER_OF_PATHS_TO_WATCH);
+
+        if (CREATE_RECURSIVE_WATCHER) {
+            this.pathWatcher = this.pathWatcherFactory.createRecursiveWatcher(pathWatcherExecutorService, this.rootPath, this.pathEventListener);
+        } else {
+            this.pathWatcher = this.pathWatcherFactory.createNonRecursiveWatcher(pathWatcherExecutorService, this.rootPath, this.pathEventListener);
+        }
+
         try {
             if (! this.pathWatcher.isRunning()) {
                 this.pathWatcher.start();
+            } else {
+                logger.trace("Could not start path watcher: path watcher is already running");
             }
         } catch (IOException e) {
             logger.error("Could not start path watcher. Message: " + e.getMessage());
@@ -170,18 +176,23 @@ public class EventAggregator implements IEventListener, IEventAggregator {
         // schedule the pathEventListener to notify us if he has events on the fixed interval
         this.aggregationExecutorService = Executors.newSingleThreadScheduledExecutor();
         this.aggregationExecutorService.scheduleAtFixedRate(this.pathEventListener, 0, this.aggregationInterval, TimeUnit.MILLISECONDS);
+
+        logger.trace("Completed starting EventAggregator");
     }
 
     public void stop() {
+        logger.trace("Stopping EventAggregator...");
         if (this.pathWatcher.isRunning()) {
             this.pathWatcher.stop();
+        } else {
+            logger.trace("Could not stop path watcher: path watcher is not running");
         }
 
         this.pathWatcherExecutorService.shutdown();
 
-		if (null != this.aggregationExecutorService) {
-			this.aggregationExecutorService.shutdown();
-		}
+        if (null != this.aggregationExecutorService) {
+            this.aggregationExecutorService.shutdown();
+        }
     }
 
     public void onChange(List<IEvent> events) {
