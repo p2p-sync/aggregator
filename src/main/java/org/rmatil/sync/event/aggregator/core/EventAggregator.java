@@ -182,13 +182,15 @@ public class EventAggregator implements IEventListener, IEventAggregator {
 
     public void stop() {
         logger.trace("Stopping EventAggregator...");
-        if (this.pathWatcher.isRunning()) {
+        if (null != this.pathWatcher && this.pathWatcher.isRunning()) {
             this.pathWatcher.stop();
         } else {
             logger.trace("Could not stop path watcher: path watcher is not running");
         }
 
-        this.pathWatcherExecutorService.shutdown();
+        if (null != this.pathWatcherExecutorService) {
+            this.pathWatcherExecutorService.shutdown();
+        }
 
         if (null != this.aggregationExecutorService) {
             this.aggregationExecutorService.shutdown();
