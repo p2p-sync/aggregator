@@ -1,6 +1,5 @@
 package org.rmatil.sync.event.aggregator.test.core;
 
-import name.mitterdorfer.perlock.PathChangeListener;
 import org.junit.*;
 import org.rmatil.sync.event.aggregator.api.IEventListener;
 import org.rmatil.sync.event.aggregator.core.PathEventListener;
@@ -11,6 +10,8 @@ import org.rmatil.sync.event.aggregator.core.events.ModifyEvent;
 import org.rmatil.sync.event.aggregator.test.config.Config;
 import org.rmatil.sync.event.aggregator.test.util.FileUtil;
 import org.rmatil.sync.event.aggregator.test.util.PathChangeEventListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.concurrent.Executors;
@@ -21,6 +22,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.*;
 
 public class PathEventListenerTest {
+    private static final Logger logger = LoggerFactory.getLogger(PathEventListenerTest.class);
 
     private static final Path ROOT_TEST_DIR        = Config.DEFAULT.getRootTestDir();
     private static final long AGGREGATION_INTERVAL = Config.DEFAULT.getTimeGapPushInterval();
@@ -68,6 +70,7 @@ public class PathEventListenerTest {
     @Test
     public void testOnPathCreated()
             throws InterruptedException {
+
         assertTrue("Event bag is not empty at the beginning", eventListener.getEvents().isEmpty());
 
         Path file = FileUtil.createTestFile(ROOT_TEST_DIR);
@@ -90,11 +93,16 @@ public class PathEventListenerTest {
     @Test
     public void testOnPathModified()
             throws InterruptedException {
+        logger.info("Starting testOnPathModified");
         assertTrue("Event bag is not empty at the beginning", eventListener.getEvents().isEmpty());
 
+        logger.info("Creating test file");
         Path file = FileUtil.createTestFile(ROOT_TEST_DIR);
         listener.onPathCreated(file);
 
+        Thread.sleep(100L);
+
+        logger.info("Modifying Test file");
         Path fileModify = FileUtil.modifyTestFile(ROOT_TEST_DIR);
         listener.onPathModified(fileModify);
 
