@@ -25,11 +25,9 @@ public class PathEventListenerTest {
     private static final Logger logger = LoggerFactory.getLogger(PathEventListenerTest.class);
 
     private static final Path ROOT_TEST_DIR        = Config.DEFAULT.getRootTestDir();
-    private static final long AGGREGATION_INTERVAL = Config.DEFAULT.getTimeGapPushInterval();
 
     private static PathEventListener        listener;
     private static PathChangeEventListener  eventListener;
-    private static ScheduledExecutorService aggregationExecutorService;
 
     @BeforeClass
     public static void setUp() {
@@ -43,7 +41,6 @@ public class PathEventListenerTest {
     @AfterClass
     public static void tearDown() {
         APathTest.tearDown();
-        aggregationExecutorService.shutdownNow();
     }
 
     @Before
@@ -51,10 +48,6 @@ public class PathEventListenerTest {
             throws InterruptedException {
         FileUtil.deleteTestFile(ROOT_TEST_DIR);
         eventListener.getEvents().clear();
-        // we have to recreate the executor otherwise we would attempt
-        // to create new threads on a terminated executor service
-        aggregationExecutorService = Executors.newSingleThreadScheduledExecutor();
-        aggregationExecutorService.scheduleAtFixedRate(listener, 0, AGGREGATION_INTERVAL, TimeUnit.MILLISECONDS);
     }
 
     @After
@@ -62,9 +55,6 @@ public class PathEventListenerTest {
             throws InterruptedException {
         FileUtil.deleteTestFile(ROOT_TEST_DIR);
         eventListener.getEvents().clear();
-
-        aggregationExecutorService.awaitTermination(AGGREGATION_INTERVAL, TimeUnit.MILLISECONDS);
-        aggregationExecutorService.shutdownNow();
     }
 
     @Test
@@ -76,8 +66,7 @@ public class PathEventListenerTest {
         Path file = FileUtil.createTestFile(ROOT_TEST_DIR);
         listener.onPathCreated(file);
 
-        // wait until our listener is notified
-        Thread.sleep(AGGREGATION_INTERVAL + 100L);
+        listener.run();
 
         assertFalse("Event bag does not contain the new creation event", eventListener.getEvents().isEmpty());
         assertEquals("Event bag does not contain only one element", 1, eventListener.getEvents().size());
@@ -100,14 +89,11 @@ public class PathEventListenerTest {
         Path file = FileUtil.createTestFile(ROOT_TEST_DIR);
         listener.onPathCreated(file);
 
-        Thread.sleep(100L);
-
         logger.info("Modifying Test file");
         Path fileModify = FileUtil.modifyTestFile(ROOT_TEST_DIR);
         listener.onPathModified(fileModify);
 
-        // wait until our listener is notified
-        Thread.sleep(AGGREGATION_INTERVAL + 100L);
+        listener.run();
 
         assertEquals("Event bag does not contain create and modify event", 2, eventListener.getEvents().size());
 
@@ -134,8 +120,7 @@ public class PathEventListenerTest {
         Path fileDelete = FileUtil.deleteTestFile(ROOT_TEST_DIR);
         listener.onPathDeleted(fileDelete);
 
-        // wait until our listener is notified
-        Thread.sleep(AGGREGATION_INTERVAL + 100L);
+        listener.run();
 
         assertEquals("Event bag does not contain create and delete event", 2, eventListener.getEvents().size());
 
