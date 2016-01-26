@@ -17,6 +17,7 @@ import org.rmatil.sync.version.core.model.Version;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -228,7 +229,7 @@ public class HistoryMoveAggregatorTest {
                 PathType.FILE,
                 false,
                 false,
-                new ArrayList<>(),
+                new HashSet<>(),
                 versions
         );
 
