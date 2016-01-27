@@ -56,6 +56,11 @@ public class ObjectManagerMock implements IObjectManager {
     }
 
     @Override
+    public String getHashForPath(String s) {
+        return "testHash";
+    }
+
+    @Override
     public void removeObject(String fileNameHash)
             throws InputOutputException {
         this.pathObjects.remove(fileNameHash);
