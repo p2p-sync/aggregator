@@ -224,11 +224,11 @@ public class HistoryMoveAggregatorTest {
 
         PathObject testOldPath = new PathObject(
                 fileName,
-                null,
                 Naming.getPathWithoutFileName(fileName, oldPath.toString()),
                 PathType.FILE,
                 false,
                 false,
+                null,
                 new HashSet<>(),
                 versions
         );
