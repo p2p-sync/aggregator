@@ -9,6 +9,7 @@ import org.rmatil.sync.event.aggregator.core.events.*;
 import org.rmatil.sync.event.aggregator.test.config.Config;
 import org.rmatil.sync.event.aggregator.test.mocks.ObjectManagerMock;
 import org.rmatil.sync.persistence.exceptions.InputOutputException;
+import org.rmatil.sync.version.api.AccessType;
 import org.rmatil.sync.version.api.IObjectManager;
 import org.rmatil.sync.version.api.PathType;
 import org.rmatil.sync.version.core.model.PathObject;
@@ -226,6 +227,7 @@ public class HistoryMoveAggregatorTest {
                 fileName,
                 Naming.getPathWithoutFileName(fileName, oldPath.toString()),
                 PathType.FILE,
+                AccessType.WRITE,
                 false,
                 false,
                 null,
