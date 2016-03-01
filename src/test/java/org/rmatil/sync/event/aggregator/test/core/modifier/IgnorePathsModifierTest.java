@@ -27,7 +27,7 @@ public class IgnorePathsModifierTest {
     public static void setUp() {
         List<Path> ignoredPaths = new ArrayList<>();
         ignoredPaths.add(IGNORED_DIR);
-        ignorePathsModifier = new IgnorePathsModifier(ROOT_TEST_DIR, ignoredPaths);
+        ignorePathsModifier = new IgnorePathsModifier(ignoredPaths);
 
         List<String> ignoredPatterns = new ArrayList<>();
         ignoredPatterns.add("*.java"); // ignore all files ending with .java
@@ -36,7 +36,7 @@ public class IgnorePathsModifierTest {
         ignoredPatterns.add("**.swx"); // ignore swap files of vim (?)
         ignoredPatterns.add("**.swp"); // ignore swap files of vim
 
-        ignorePathsModifier2 = new IgnorePathsModifier(ROOT_TEST_DIR, ignoredPaths, ignoredPatterns);
+        ignorePathsModifier2 = new IgnorePathsModifier(ignoredPaths, ignoredPatterns);
     }
 
     @Test
@@ -73,7 +73,7 @@ public class IgnorePathsModifierTest {
         IEvent ev5 = new MoveEvent(ROOT_TEST_DIR.resolve(".sync/someFile.txt"), ROOT_TEST_DIR.resolve("/tmp/dir/newFile.txt"), "newFile.txt", "someHash", System.currentTimeMillis());
         IEvent ev6 = new MoveEvent(ROOT_TEST_DIR.resolve("/tmp/dir/someFile.txt"), ROOT_TEST_DIR.resolve(".sync/newFile.txt"), "newFile.txt", "someHash", System.currentTimeMillis());
         IEvent ev7 = new CreateEvent(ROOT_TEST_DIR.resolve(".DS_Store"), ".DS_Store", "someHash", System.currentTimeMillis());
-        IEvent ev8 = new CreateEvent(ROOT_TEST_DIR.resolve("myFile.java"), "myFile.java", "someHash", System.currentTimeMillis());
+        IEvent ev8 = new CreateEvent(Paths.get("myFile.java"), "myFile.java", "someHash", System.currentTimeMillis());
         IEvent ev9 = new CreateEvent(ROOT_TEST_DIR.resolve("path/to/myFile.java"), "myFile.java", "someHash", System.currentTimeMillis()); // should not be ignored -> glob pattern not crossing dir boundaries
         IEvent ev10 = new CreateEvent(ROOT_TEST_DIR.resolve("path/to/file_with_underlines.txt"), "file_with_underlines.txt", "someHash", System.currentTimeMillis());
         IEvent ev11 = new MoveEvent(ROOT_TEST_DIR.resolve("path/to/file.txt"), ROOT_TEST_DIR.resolve("path/to/file.swp"), "file.txt", "someHash", System.currentTimeMillis());

@@ -183,7 +183,7 @@ public class EventAggregatorTest {
         assertEquals("Listeners are not correctly removed", 0, eventAggregator.getListeners().size());
         eventAggregator.addListener(eventListener);
 
-        IModifier modifier = new IgnorePathsModifier(ROOT_TEST_DIR, new ArrayList<>());
+        IModifier modifier = new IgnorePathsModifier(new ArrayList<>());
         eventAggregator.addModifier(modifier);
         assertEquals("Modifier are not correctly registered", 2, eventAggregator.getModifiers().size());
         eventAggregator.removeModifier(modifier);

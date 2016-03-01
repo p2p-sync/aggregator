@@ -19,24 +19,21 @@ public class IgnorePathsModifier implements IModifier {
 
     final static Logger logger = LoggerFactory.getLogger(IgnorePathsModifier.class);
 
-    protected Path         rootDir;
     protected List<Path>   ignoredPaths;
     protected List<String> ignoredPatterns;
 
     /**
      * @param ignoredPaths A list of paths (relative to the root of the sync folder) which are ignored
      */
-    public IgnorePathsModifier(Path rootDir, List<Path> ignoredPaths) {
-        this(rootDir, ignoredPaths, new ArrayList<>());
+    public IgnorePathsModifier(List<Path> ignoredPaths) {
+        this(ignoredPaths, new ArrayList<>());
     }
 
     /**
-     * @param rootDir         The root directory to which the paths should be resolved when using glob patterns
      * @param ignoredPaths    A list of paths (relative to the root of the sync folder) which are ignored
      * @param ignoredPatterns A list of regex patterns
      */
-    public IgnorePathsModifier(Path rootDir, List<Path> ignoredPaths, List<String> ignoredPatterns) {
-        this.rootDir = rootDir;
+    public IgnorePathsModifier(List<Path> ignoredPaths, List<String> ignoredPatterns) {
         this.ignoredPaths = ignoredPaths;
         this.ignoredPatterns = ignoredPatterns;
     }
@@ -76,14 +73,14 @@ public class IgnorePathsModifier implements IModifier {
                     if (event instanceof CreateEvent ||
                             event instanceof ModifyEvent ||
                             event instanceof DeleteEvent) {
-                        if (matcher.matches(this.rootDir.relativize(event.getPath()))) {
+                        if (matcher.matches(event.getPath())) {
                             isChildOfIgnored = true;
                             logger.trace("Ignoring file " + event.getPath().toString() + " since it matches the registered glob pattern " + pattern);
                             break;
                         }
                     } else if (event instanceof MoveEvent) {
-                        if (matcher.matches(this.rootDir.relativize(event.getPath())) ||
-                                matcher.matches(this.rootDir.relativize(((MoveEvent) event).getNewPath()))) {
+                        if (matcher.matches(event.getPath()) ||
+                                matcher.matches(((MoveEvent) event).getNewPath())) {
                             isChildOfIgnored = true;
                             logger.trace("Ignoring the move of file " + event.getPath().toString() + " to " + ((MoveEvent) event).getNewPath() + " since it matches the registered glob pattern " + pattern);
                             break;
