@@ -10,8 +10,10 @@ import org.rmatil.sync.event.aggregator.test.config.Config;
 import org.rmatil.sync.event.aggregator.test.mocks.ObjectManagerMock;
 import org.rmatil.sync.persistence.exceptions.InputOutputException;
 import org.rmatil.sync.version.api.AccessType;
+import org.rmatil.sync.version.api.DeleteType;
 import org.rmatil.sync.version.api.IObjectManager;
 import org.rmatil.sync.version.api.PathType;
+import org.rmatil.sync.version.core.model.Delete;
 import org.rmatil.sync.version.core.model.PathObject;
 import org.rmatil.sync.version.core.model.Version;
 
@@ -229,7 +231,7 @@ public class HistoryMoveAggregatorTest {
                 PathType.FILE,
                 AccessType.WRITE,
                 false,
-                false,
+                new Delete(DeleteType.EXISTENT, new ArrayList<>()),
                 null,
                 new HashSet<>(),
                 versions
