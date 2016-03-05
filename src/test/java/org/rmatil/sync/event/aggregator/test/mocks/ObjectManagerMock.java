@@ -40,7 +40,9 @@ public class ObjectManagerMock implements IObjectManager {
     @Override
     public void writeObject(PathObject path)
             throws InputOutputException {
-        this.pathObjects.put(Hash.hash(Config.DEFAULT.getHashingAlgorithm(), path.getAbsolutePath()), path);
+        String hash = Hash.hash(Config.DEFAULT.getHashingAlgorithm(), path.getAbsolutePath());
+        this.index.getPaths().put(path.getAbsolutePath(), hash);
+        this.pathObjects.put(hash, path);
     }
 
     @Override
@@ -52,7 +54,17 @@ public class ObjectManagerMock implements IObjectManager {
     @Override
     public PathObject getObjectForPath(String s)
             throws InputOutputException {
-        throw new RuntimeException("Not implemented");
+        String hash = this.index.getPaths().get(s);
+        if (null == hash) {
+            throw new InputOutputException("Failed to get hash for path " + s + ". No such file or directory");
+        }
+
+        PathObject pathObject = this.pathObjects.get(hash);
+        if (null == pathObject) {
+            throw new InputOutputException("Failed to get object for path " + s + ". No object found");
+        }
+
+        return pathObject;
     }
 
     @Override
