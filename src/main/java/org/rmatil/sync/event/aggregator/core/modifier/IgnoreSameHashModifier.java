@@ -1,5 +1,6 @@
 package org.rmatil.sync.event.aggregator.core.modifier;
 
+import org.rmatil.sync.event.aggregator.core.events.CreateEvent;
 import org.rmatil.sync.event.aggregator.core.events.IEvent;
 import org.rmatil.sync.event.aggregator.core.events.ModifyEvent;
 import org.rmatil.sync.persistence.exceptions.InputOutputException;
@@ -36,21 +37,39 @@ public class IgnoreSameHashModifier implements IModifier {
             if (event instanceof ModifyEvent) {
                 // check whether the last hash in the object store
                 // is the same as the hash of the event
-                try {
-                    PathObject pathObject = this.objectManager.getObjectForPath(event.getPath().toString());
 
-                    Version lastVersion = (! pathObject.getVersions().isEmpty()) ? pathObject.getVersions().get(Math.max(0, pathObject.getVersions().size() - 1)) : null;
+                boolean ignoredDueToSameCreateHash = false;
+                // look for a create event for the same file
+                for (IEvent potentialCreateEvent : events) {
+                    if (potentialCreateEvent instanceof CreateEvent) {
+                        if (potentialCreateEvent.getPath().toString().equals(event.getPath().toString()) &&
+                                potentialCreateEvent.getHash().equals(event.getHash())) {
+                            // we found the create event with the same hash
+                            logger.info("Ignoring modify event for " + event.getPath() + " since its change (" + event.getHash() + ") is equal to the CreateEvent-Hash");
+                            ignoredDueToSameCreateHash = true;
+                            break;
+                        }
+                    }
+                }
 
-                    if (null != lastVersion && lastVersion.getHash().equals(event.getHash())) {
-                        logger.info("Ignoring modify event for " + event.getPath() + " since its change (" + event.getHash() + ") is already stored in the ObjectStore");
-                    } else {
-                        // versions are not equal
+                if (! ignoredDueToSameCreateHash) {
+                    // try to get information about the element from the ObjectStore
+                    try {
+                        PathObject pathObject = this.objectManager.getObjectForPath(event.getPath().toString());
+
+                        Version lastVersion = (! pathObject.getVersions().isEmpty()) ? pathObject.getVersions().get(Math.max(0, pathObject.getVersions().size() - 1)) : null;
+
+                        if (null != lastVersion && lastVersion.getHash().equals(event.getHash())) {
+                            logger.info("Ignoring modify event for " + event.getPath() + " since its change (" + event.getHash() + ") is already stored in the ObjectStore");
+                        } else {
+                            // versions are not equal
+                            modifiedEvents.add(event);
+                        }
+
+                    } catch (InputOutputException e) {
+                        logger.error("Failed to check whether the last hash is equal to the hash of the modify event for element " + event.getPath() + ". Message: " + e.getMessage() + ". Not ignoring this event...");
                         modifiedEvents.add(event);
                     }
-
-                } catch (InputOutputException e) {
-                    logger.error("Failed to check whether the last hash is equal to the hash of the modify event for element " + event.getPath() + ". Message: " + e.getMessage() + ". Not ignoring this event...");
-                    modifiedEvents.add(event);
                 }
             } else {
                 modifiedEvents.add(event);

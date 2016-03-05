@@ -24,7 +24,6 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 public class IgnoreSameHashModifierTest {
 
@@ -44,6 +43,21 @@ public class IgnoreSameHashModifierTest {
         objectManagerMock = new ObjectManagerMock();
         objectManagerMock.writeObject(new PathObject(
                 "myFile.txt",
+                "path/to",
+                PathType.FILE,
+                null,
+                false,
+                new Delete(
+                        DeleteType.EXISTENT,
+                        deleteHistory
+                ),
+                null,
+                new HashSet<>(),
+                versions
+        ));
+
+        objectManagerMock.writeObject(new PathObject(
+                "myFile2.txt",
                 "path/to",
                 PathType.FILE,
                 null,
@@ -85,6 +99,16 @@ public class IgnoreSameHashModifierTest {
                         Paths.get("path/to/myFile.txt"),
                         "myFile.txt",
                         "some2ndHash",
+                        System.currentTimeMillis()
+                )
+        );
+
+        // event which should be ignored due to the same hash
+        events.add(
+                new ModifyEvent(
+                        Paths.get("path/to/myFile2.txt"),
+                        "myFile2.txt",
+                        "someInitialHash",
                         System.currentTimeMillis()
                 )
         );
