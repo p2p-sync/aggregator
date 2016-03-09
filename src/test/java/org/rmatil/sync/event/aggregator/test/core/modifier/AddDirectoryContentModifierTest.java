@@ -6,7 +6,7 @@ import org.rmatil.sync.event.aggregator.core.modifier.AddDirectoryContentModifie
 import org.rmatil.sync.event.aggregator.test.config.Config;
 import org.rmatil.sync.event.aggregator.test.core.APathTest;
 import org.rmatil.sync.event.aggregator.test.util.FileUtil;
-import org.rmatil.sync.persistence.core.local.LocalStorageAdapter;
+import org.rmatil.sync.persistence.core.tree.local.LocalStorageAdapter;
 import org.rmatil.sync.persistence.exceptions.InputOutputException;
 import org.rmatil.sync.version.core.ObjectStore;
 
