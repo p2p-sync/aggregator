@@ -45,11 +45,15 @@ the change in the watched folder.
 
 ### IgnorePathsModifier
 To avoid filesystem notifications about certain paths in the watched directory, one can specify to ignore all events
-created for the particular path element by using this modifier.
+created for a particular element by using this modifier. Two ways are supported to ignore paths: Either by specifying
+an actual path which should be ignored or by defining glob patterns as documented [here](https://docs.oracle.com/javase/8/docs/api/java/nio/file/FileSystem.html#getPathMatcher-java.lang.String-)
 
 ### RelativePathsModifier
-To get all paths contained in the events relative to the watched folder, one can use this modifier. On instantiation, the 
+To receive all path values, contained in the aggregated events, relative to the watched folder, one can use this modifier. On instantiation, the 
 folder to which all event-paths are relativized must be provided.
+
+### IgnoreSameHashModifier
+This modifier filters all `ModifyEvents` having a value for the hash which is already known by the `ObjectStore`.
 
 ## Aggregator
 Aggregators are responsible to aggregate a bunch of filesystem events into one or multiple other events.
@@ -58,6 +62,96 @@ Aggregators are responsible to aggregate a bunch of filesystem events into one o
 The HistoryMoveAggregator tries to detect a move of a file or directory by the combination of a delete and create event.
 If a well-defined hash of the file contents are equal, then one can assume, that the remove and the newly created file are identical. However, since the computation of a hash over contents of a deleted file is not possible, this aggregator relies
 on a local history of file contents. For more information about versioning of files, see [P2P-Sync Versions](https://github.com/p2p-sync/versions).
+
+# Usage
+
+```java
+import org.rmatil.sync.event.aggregator.api.IEventAggregator;
+import org.rmatil.sync.event.aggregator.api.IEventListener;
+import org.rmatil.sync.event.aggregator.core.EventAggregator;
+import org.rmatil.sync.event.aggregator.core.aggregator.HistoryMoveAggregator;
+import org.rmatil.sync.event.aggregator.core.aggregator.IAggregator;
+import org.rmatil.sync.event.aggregator.core.modifier.*;
+import org.rmatil.sync.event.aggregator.core.pathwatcher.PerlockPathWatcherFactory;
+import org.rmatil.sync.persistence.core.tree.local.LocalStorageAdapter;
+import org.rmatil.sync.persistence.exceptions.InputOutputException;
+import org.rmatil.sync.version.api.IObjectStore;
+import org.rmatil.sync.version.core.ObjectStore;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+
+// ...
+
+
+    // Specify the path to the folder which should be watched
+    Path rootPath = Paths.get("path/to/root/watched/folder");
+    // Specify the path to the object store folder
+    Path osPath = rootPath.resolve(".sync");
+
+    // ignore .sync directory
+    List<Path>ignoredPaths = new ArrayList<>();
+    ignoredPaths.add(Paths.get(".sync"));
+
+    // ignore all .DS_Store files
+    List<String>ignoredPatterns = new ArrayList<>();
+    ignoredPatterns.add("**/*.DS_Store");
+    ignoredPatterns.add(".sync/*");
+
+    // create a new ObjectStore
+    IObjectStore objectStore = new ObjectStore(
+      new LocalStorageAdapter(rootPath),
+      "index.json",
+      "object",
+      new LocalStorageAdapter(osPath)
+    );
+
+
+    // all file events will contain a path resolved to the rootPath defined above,
+    // e.g. path/to/root/watched/folder/someFile.txt will be relativized to someFile.txt
+    IModifier relativePathModifier = new RelativePathModifier(rootPath);
+
+    // if a directory is modified, i.e. an element contained is added / removed
+    // we like to have the event for that element too, not only the modify event of the directory
+    IModifier addDirectoryContentModifier = new AddDirectoryContentModifier(rootPath,objectStore);
+
+    // Ignore the specified paths, i.e. all events matching any of the paths resp. patterns
+    // will be discarded
+    IModifier ignorePathsModifier = new IgnorePathsModifier(ignoredPaths,ignoredPatterns);
+
+    // Ignore modify events of directories
+    IModifier ignoreDirectoryModifier = new IgnoreDirectoryModifier(rootPath);
+
+    // Ignore all modify events which contain a hash already known
+    IModifier sameHashModifier = new IgnoreSameHashModifier(objectStore.getObjectManager());
+
+    // Aggregate delete & create events to a move event
+    IAggregator historyMoveAggregator = new HistoryMoveAggregator(objectStore.getObjectManager());
+
+    IEventAggregator eventAggregator = new EventAggregator(rootPath,new PerlockPathWatcherFactory());
+    eventAggregator.setAggregationInterval(5000L); // aggregate events every 5 seconds
+
+    // register a new event listener
+    IEventListener eventListener = ...;
+    eventAggregator.addListener(eventListener);
+
+    // add modifiers
+    eventAggregator.addModifier(relativePathModifier);
+    eventAggregator.addModifier(addDirectoryContentModifier);
+    eventAggregator.addModifier(ignoreDirectoryModifier);
+    eventAggregator.addModifier(ignorePathsModifier);
+    eventAggregator.addModifier(sameHashModifier);
+
+    // add aggregator
+    eventAggregator.addAggregator(historyMoveAggregator);
+    
+    
+// ...
+
+
+```
 
 # License
 ```
