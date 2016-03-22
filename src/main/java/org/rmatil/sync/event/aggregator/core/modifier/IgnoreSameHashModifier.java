@@ -12,7 +12,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * This modifier removes modify events which
@@ -33,6 +35,9 @@ public class IgnoreSameHashModifier implements IModifier {
         Collections.sort(events);
         List<IEvent> modifiedEvents = new ArrayList<>();
 
+        List<IEvent> clone = events.stream().collect(Collectors.toList());
+        Iterator<IEvent> cloneItr = clone.iterator();
+
         for (IEvent event : events) {
             if (event instanceof ModifyEvent) {
                 // check whether the last hash in the object store
@@ -50,6 +55,32 @@ public class IgnoreSameHashModifier implements IModifier {
                             break;
                         }
                     }
+                }
+
+                if (! ignoredDueToSameCreateHash) {
+                    while (cloneItr.hasNext()) {
+                        IEvent potentialSameHashModifyEvent = cloneItr.next();
+
+                        if (potentialSameHashModifyEvent instanceof ModifyEvent) {
+                            // do not compare the own event
+                            if (event == potentialSameHashModifyEvent) {
+                                continue;
+                            }
+
+                            if (potentialSameHashModifyEvent.getPath().toString().equals(event.getPath().toString()) &&
+                                    potentialSameHashModifyEvent.getHash().equals(event.getHash())) {
+                                logger.info("Ignoring modify event for " + event.getPath() + " since its change (" + event.getHash() + ") is equal to another ModifyEvent-Hash");
+                                // remove element from list to avoid wrong
+                                // ignores of happening
+                                cloneItr.remove();
+                                ignoredDueToSameCreateHash = true;
+                                // but do not break here to remove all other matching events too
+                            }
+                        }
+                    }
+
+                    // reset iterator
+                    cloneItr = clone.iterator();
                 }
 
                 if (! ignoredDueToSameCreateHash) {
@@ -74,6 +105,7 @@ public class IgnoreSameHashModifier implements IModifier {
             } else {
                 modifiedEvents.add(event);
             }
+
         }
 
         return modifiedEvents;
