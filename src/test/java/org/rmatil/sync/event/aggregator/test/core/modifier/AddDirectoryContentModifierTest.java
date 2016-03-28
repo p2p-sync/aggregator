@@ -145,6 +145,45 @@ public class AddDirectoryContentModifierTest {
     }
 
     @Test
+    public void testModifyCreateWithCreateEvent() {
+        Path relativePath = Config.DEFAULT.getRootTestDir().relativize(dir);
+        CreateEvent createEvent = new CreateEvent(
+                relativePath,
+                relativePath.getFileName().toString(),
+                null,
+                System.currentTimeMillis()
+        );
+
+        // create an additional create event which should force the
+        // relative path modifier to avoid
+        // creating a new create event again
+        Path relativePathOfFileInDir = Config.DEFAULT.getRootTestDir().relativize(fileInDir);
+        CreateEvent additionalCreateEvent = new CreateEvent(
+                relativePathOfFileInDir,
+                relativePathOfFileInDir.getFileName().toString(),
+                null,
+                System.currentTimeMillis()
+        );
+
+        List<IEvent> events = new ArrayList<>();
+        events.add(createEvent);
+        events.add(additionalCreateEvent);
+
+        List<IEvent> results = addDirectoryContentModifier.modify(events);
+
+        // expected events
+        // 1: create event itself
+        // 2: fileInDir
+        // 3: file2InDir
+        // 4: dirInDir
+        // 5: fileInDirInDir
+        assertEquals("Not expected number of results modified", 5, results.size());
+        assertThat("No delete event should be inside results", events, not(hasItem(isA(DeleteEvent.class))));
+        assertThat("No modify event should be inside results", events, not(hasItem(isA(ModifyEvent.class))));
+        assertThat("No move event should be inside results", events, not(hasItem(isA(MoveEvent.class))));
+    }
+
+    @Test
     public void testModify() {
         Path relativePath = Config.DEFAULT.getRootTestDir().relativize(dir);
         ModifyEvent modifyEvent = new ModifyEvent(

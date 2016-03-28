@@ -56,7 +56,7 @@ public class AddDirectoryContentModifier implements IModifier {
                 modifiedEvents.add(event);
                 // create createEvent for each file contained in the dir
                 if (this.rootDir.resolve(event.getPath()).toFile().isDirectory()) {
-                    modifiedEvents.addAll(createCreateEventForChildren(this.rootDir.resolve(event.getPath()).toFile(), event.getTimestamp()));
+                    modifiedEvents.addAll(createCreateEventForChildren(events, this.rootDir.resolve(event.getPath()).toFile(), event.getTimestamp()));
                 }
             } else {
                 modifiedEvents.add(event);
@@ -67,7 +67,7 @@ public class AddDirectoryContentModifier implements IModifier {
         return modifiedEvents;
     }
 
-    protected List<IEvent> createCreateEventForChildren(File parentDirectory, long timestamp) {
+    protected List<IEvent> createCreateEventForChildren(final List<IEvent> origEvents, File parentDirectory, long timestamp) {
         List<IEvent> events = new ArrayList<>();
         if (null == parentDirectory) {
             return events;
@@ -75,17 +75,28 @@ public class AddDirectoryContentModifier implements IModifier {
 
         // traverse each file
         for (File file : parentDirectory.listFiles()) {
-            try {
-                logger.trace("Create createEvent for subfile " + file.toPath().toString() + " in parentDir " + parentDirectory.toString());
-                // add additional n milliseconds such that the child contents are processed later than the parent ones
-                events.add(new CreateEvent(this.rootDir.relativize(file.toPath()), file.getName(), Hash.hash(Config.DEFAULT.getHashingAlgorithm(), file), timestamp + Math.abs(this.getAdditionalMilliseconds(parentDirectory.toString(), file.toString()))));
-            } catch (IOException e) {
-                logger.error("Could not hash contents of file " + file.toPath().toString());
+
+            boolean hasCreateEvent = false;
+            for (IEvent entry : origEvents) {
+                if (entry instanceof CreateEvent && entry.getPath().toString().equals(this.rootDir.relativize(file.toPath()).toString())) {
+                    hasCreateEvent = true;
+                }
+            }
+
+            // only build a create event if none exists yet
+            if (! hasCreateEvent) {
+                try {
+                    logger.trace("Create createEvent for subfile " + file.toPath().toString() + " in parentDir " + parentDirectory.toString());
+                    // add additional n milliseconds such that the child contents are processed later than the parent ones
+                    events.add(new CreateEvent(this.rootDir.relativize(file.toPath()), file.getName(), Hash.hash(Config.DEFAULT.getHashingAlgorithm(), file), timestamp + Math.abs(this.getAdditionalMilliseconds(parentDirectory.toString(), file.toString()))));
+                } catch (IOException e) {
+                    logger.error("Could not hash contents of file " + file.toPath().toString());
+                }
             }
 
             if (file.isDirectory()) {
                 // add additional n milliseconds such that the child contents are processed later than the parent ones
-                events.addAll(this.createCreateEventForChildren(file, timestamp + Math.abs(this.getAdditionalMilliseconds(parentDirectory.toString(), file.toString()))));
+                events.addAll(this.createCreateEventForChildren(origEvents, file, timestamp + Math.abs(this.getAdditionalMilliseconds(parentDirectory.toString(), file.toString()))));
             }
         }
 
