@@ -50,7 +50,7 @@ public class IgnoreSameHashModifier implements IModifier {
                         if (potentialCreateEvent.getPath().toString().equals(event.getPath().toString()) &&
                                 potentialCreateEvent.getHash().equals(event.getHash())) {
                             // we found the create event with the same hash
-                            logger.info("Ignoring modify event for " + event.getPath() + " since its change (" + event.getHash() + ") is equal to the CreateEvent-Hash");
+                            logger.info("Ignoring modify event for " + event.getPath() + " since its change (" + event.getHash() + ") is equal to the CreateEvent-Hash (" + potentialCreateEvent.getHash() + ")");
                             ignoredDueToSameCreateHash = true;
                             break;
                         }
@@ -85,6 +85,8 @@ public class IgnoreSameHashModifier implements IModifier {
 
                 if (! ignoredDueToSameCreateHash) {
                     // try to get information about the element from the ObjectStore
+                    logger.debug("Trying to get the path object for event " + event.getEventName() + ", " + event.getPath() + " having hash " + event.getHash());
+
                     try {
                         PathObject pathObject = this.objectManager.getObjectForPath(event.getPath().toString());
 
