@@ -18,7 +18,9 @@ import java.util.stream.Collectors;
 
 /**
  * This modifier removes modify events which
- * have the same hash as the last in the object store.
+ * have the same hash as the last one in the object store.
+ * Additionally, it ignores all modify events which either have the same hash
+ * as the create event for the same file or as another modify event.
  */
 public class IgnoreSameHashModifier implements IModifier {
 
