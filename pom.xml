@@ -6,7 +6,7 @@
 
     <groupId>org.rmatil.sync.event.aggregator</groupId>
     <artifactId>sync-event-aggregator</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <repositories>
         <repository>
@@ -136,12 +136,12 @@
         <dependency>
             <groupId>org.rmatil.sync.commons</groupId>
             <artifactId>sync-commons</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.rmatil.sync.version</groupId>
             <artifactId>sync-version</artifactId>
-            <version>0.1-SNAPSHOT</version>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>name.mitterdorfer.perlock</groupId>
