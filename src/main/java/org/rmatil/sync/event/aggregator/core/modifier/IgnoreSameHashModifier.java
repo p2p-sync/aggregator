@@ -59,6 +59,9 @@ public class IgnoreSameHashModifier implements IModifier {
                     }
                 }
 
+                // if own (i.e. event) event was previously removed
+                // we do not have to add it again
+                boolean ownEventWasPresent = false;
                 if (! ignoredDueToSameCreateHash) {
                     while (cloneItr.hasNext()) {
                         IEvent potentialSameHashModifyEvent = cloneItr.next();
@@ -66,6 +69,8 @@ public class IgnoreSameHashModifier implements IModifier {
                         if (potentialSameHashModifyEvent instanceof ModifyEvent) {
                             // do not compare the own event
                             if (event == potentialSameHashModifyEvent) {
+                                ownEventWasPresent = true;
+                                cloneItr.remove();
                                 continue;
                             }
 
@@ -79,6 +84,10 @@ public class IgnoreSameHashModifier implements IModifier {
                                 // but do not break here to remove all other matching events too
                             }
                         }
+                    }
+
+                    if (ignoredDueToSameCreateHash) {
+                        modifiedEvents.add(event);
                     }
 
                     // reset iterator
@@ -96,14 +105,17 @@ public class IgnoreSameHashModifier implements IModifier {
 
                         if (null != lastVersion && lastVersion.getHash().equals(event.getHash())) {
                             logger.info("Ignoring modify event for " + event.getPath() + " since its change (" + event.getHash() + ") is already stored in the ObjectStore");
-                        } else {
+                        } else if (ownEventWasPresent) {
                             // versions are not equal
                             modifiedEvents.add(event);
                         }
 
                     } catch (InputOutputException e) {
                         logger.error("Failed to check whether the last hash is equal to the hash of the modify event for element " + event.getPath() + ". Message: " + e.getMessage() + ". Not ignoring this event...");
-                        modifiedEvents.add(event);
+
+                        if (ownEventWasPresent) {
+                            modifiedEvents.add(event);
+                        }
                     }
                 }
             } else {

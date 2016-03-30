@@ -13,7 +13,6 @@ import org.rmatil.sync.version.api.IObjectManager;
 import org.rmatil.sync.version.api.PathType;
 import org.rmatil.sync.version.core.model.Delete;
 import org.rmatil.sync.version.core.model.PathObject;
-import org.rmatil.sync.version.core.model.Sharer;
 import org.rmatil.sync.version.core.model.Version;
 
 import java.nio.file.Paths;
@@ -31,6 +30,7 @@ public class IgnoreSameHashModifierTest {
     protected static IObjectManager         objectManagerMock;
     protected static IgnoreSameHashModifier modifier;
     protected static List<IEvent>           events;
+    protected static List<IEvent>           events2;
 
     @BeforeClass
     public static void setUp()
@@ -160,7 +160,6 @@ public class IgnoreSameHashModifierTest {
         );
 
 
-
         // file 2
 
         // event which should be ignored due to the same hash
@@ -214,6 +213,26 @@ public class IgnoreSameHashModifierTest {
                         System.currentTimeMillis()
                 )
         );
+
+        events2 = new ArrayList<>();
+
+        events2.add(
+                new ModifyEvent(
+                        Paths.get("path/to/5thFile.txt"),
+                        "5thFile.txt",
+                        "5thHash",
+                        System.currentTimeMillis()
+                )
+        );
+
+        events2.add(
+                new ModifyEvent(
+                        Paths.get("path/to/5thFile.txt"),
+                        "5thFile.txt",
+                        "5thHash",
+                        System.currentTimeMillis()
+                )
+        );
     }
 
     @Test
@@ -231,7 +250,13 @@ public class IgnoreSameHashModifierTest {
         assertThat("5th passed event should be modify event", modifiedEvents.get(4), is(instanceOf(ModifyEvent.class)));
         assertEquals("5th passed event should be for be for 4th file", "path/to/4thFile.txt", modifiedEvents.get(4).getPath().toString());
         assertEquals("5th passed event should have 4th hash", "4thHash", modifiedEvents.get(4).getHash());
-
     }
 
+
+    @Test
+    public void test2() {
+        List<IEvent> modifiedEvents = modifier.modify(events2);
+
+        assertEquals("size should be 1", 1, modifiedEvents.size());
+    }
 }
