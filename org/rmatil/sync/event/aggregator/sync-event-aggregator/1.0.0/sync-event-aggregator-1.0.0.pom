@@ -6,7 +6,7 @@
 
     <groupId>org.rmatil.sync.event.aggregator</groupId>
     <artifactId>sync-event-aggregator</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <repositories>
         <repository>
